@@ -13,6 +13,14 @@ interface Props {
   onRename: (id: string, label: string) => Promise<void>;
 }
 
+function planBadgeClass(plan: string): string {
+  const p = plan.toLowerCase();
+  if (p.includes('pro')) return 'border-violet-500/40 bg-violet-500/15 text-violet-400';
+  if (p.includes('plus')) return 'border-primary/40 bg-primary/15 text-primary';
+  if (p.includes('team') || p.includes('enterprise')) return 'border-amber-500/40 bg-amber-500/15 text-amber-400';
+  return 'border-border bg-secondary text-muted-foreground';
+}
+
 function accentClass(snap: AccountWithUsage['latest_snapshot'], expired: boolean): string {
   if (expired) return 'accent-bad';
   if (!snap) return 'accent-muted';
@@ -84,8 +92,10 @@ function AccountCardBase({
   return (
     <div
       className={cn(
-        'relative rounded-md border bg-card transition-shadow',
+        'relative rounded-md border bg-card transition-all duration-150',
         'border-l-[3px]',
+        'shadow-[0_2px_8px_hsl(222_28%_4%/0.5)]',
+        'hover:shadow-[0_4px_16px_hsl(222_28%_4%/0.7)] hover:-translate-y-px',
         accentClass(snap, expired),
         expired ? 'border-red-500/30' : 'border-border',
       )}
@@ -130,7 +140,7 @@ function AccountCardBase({
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <span className="mono rounded border border-border bg-secondary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+          <span className={cn('mono rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-widest', planBadgeClass(account.plan_type))}>
             {account.plan_type}
           </span>
 
@@ -204,12 +214,14 @@ function AccountCardBase({
               usedPct={snap.primary_used_pct}
               resetAt={snap.primary_reset_at}
               limitReached={snap.limit_reached}
+              windowType="short"
             />
             <UsageBar
               label="Weekly window"
               usedPct={snap.secondary_used_pct}
               resetAt={snap.secondary_reset_at}
               limitReached={snap.limit_reached}
+              windowType="weekly"
             />
           </>
         ) : (

@@ -83,6 +83,7 @@ export function AddAccountModal({
   if (!open) return null;
 
   const port1455 = error?.includes('1455');
+  const duplicate = error?.toLowerCase().includes('duplicate');
   const busy = step === 'waiting' || step === 'fetching';
 
   return (
@@ -184,6 +185,11 @@ export function AddAccountModal({
                 {port1455 && (
                   <p className="mt-2 text-[10px] text-muted-foreground">
                     Port 1455 is used by the OAuth callback. Close any running Codex CLI session and try again.
+                  </p>
+                )}
+                {duplicate && (
+                  <p className="mt-2 text-[10px] text-muted-foreground">
+                    OpenAI detected a duplicate auth attempt. To add a second account, open a <strong>private/incognito window</strong> in your browser after the login page opens — or use a different browser profile that isn't already signed into ChatGPT.
                   </p>
                 )}
               </div>

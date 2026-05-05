@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 import { Zap } from 'lucide-react';
 import type { AccountWithUsage } from '../types';
+import { formatResetTime } from '../lib/time';
 import { CountdownTimer } from './CountdownTimer';
 import { UsageBar } from './UsageBar';
 
@@ -34,7 +35,7 @@ function BestAccountBannerBase({ accounts }: { accounts: AccountWithUsage[] }) {
     <div
       className="glow-emerald relative overflow-hidden rounded-md border border-emerald-500/25 bg-card"
       style={{
-        background: 'linear-gradient(135deg, hsl(142 71% 45% / 0.06) 0%, hsl(220 24% 8%) 60%)',
+        background: 'linear-gradient(135deg, hsl(142 71% 45% / 0.07) 0%, hsl(var(--card)) 60%)',
       }}
     >
       {/* Decorative top-left accent line */}
@@ -70,6 +71,8 @@ function BestAccountBannerBase({ accounts }: { accounts: AccountWithUsage[] }) {
               <span className="text-foreground/70">
                 <CountdownTimer targetUnix={snap.primary_reset_at} />
               </span>
+              {' '}· at{' '}
+              <span className="text-foreground/70">{formatResetTime(snap.primary_reset_at)}</span>
             </span>
           </div>
         </div>
@@ -94,12 +97,14 @@ function BestAccountBannerBase({ accounts }: { accounts: AccountWithUsage[] }) {
             usedPct={snap.primary_used_pct}
             resetAt={snap.primary_reset_at}
             limitReached={snap.limit_reached}
+            windowType="short"
           />
           <UsageBar
             label="Weekly"
             usedPct={snap.secondary_used_pct}
             resetAt={snap.secondary_reset_at}
             limitReached={snap.limit_reached}
+            windowType="weekly"
           />
         </div>
       </div>

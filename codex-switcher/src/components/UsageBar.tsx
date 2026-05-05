@@ -1,17 +1,19 @@
 import { memo } from 'react';
 import { CountdownTimer } from './CountdownTimer';
+import { formatResetDay, formatResetTime } from '../lib/time';
 
 interface Props {
   label: string;
   usedPct: number;
   resetAt: number;
   limitReached: boolean;
+  windowType: 'short' | 'weekly';
 }
 
 const TOTAL_SEGMENTS = 20;
 
 function segmentColor(segIndex: number, usedSegments: number, limitReached: boolean): string {
-  if (segIndex >= usedSegments) return 'hsl(220 20% 14%)';
+  if (segIndex >= usedSegments) return 'hsl(var(--secondary))';
   if (limitReached) return 'hsl(0 72% 51%)';
   const pct = (segIndex + 1) / TOTAL_SEGMENTS * 100;
   if (pct > 85) return 'hsl(0 72% 51%)';
@@ -19,7 +21,7 @@ function segmentColor(segIndex: number, usedSegments: number, limitReached: bool
   return 'hsl(142 71% 45%)';
 }
 
-function UsageBarBase({ label, usedPct, resetAt, limitReached }: Props) {
+function UsageBarBase({ label, usedPct, resetAt, limitReached, windowType }: Props) {
   const used = Math.min(100, Math.max(0, Math.round(usedPct)));
   const remaining = Math.max(0, 100 - used);
   const usedSegments = Math.round((used / 100) * TOTAL_SEGMENTS);
@@ -37,7 +39,7 @@ function UsageBarBase({ label, usedPct, resetAt, limitReached }: Props) {
           {label}
         </span>
         <span
-          className="mono text-[13px] font-semibold leading-none"
+          className="mono text-[17px] font-bold leading-none tabular-nums"
           style={{ color: remainingColor }}
         >
           {remaining}%
@@ -70,9 +72,15 @@ function UsageBarBase({ label, usedPct, resetAt, limitReached }: Props) {
 
       <p className="text-[10px] text-muted-foreground mono">
         {limitReached ? (
-          <>LIMIT REACHED · resets <CountdownTimer targetUnix={resetAt} /></>
+          windowType === 'weekly' ? (
+            <>LIMIT REACHED · resets {formatResetDay(resetAt)}</>
+          ) : (
+            <>LIMIT REACHED · resets <CountdownTimer targetUnix={resetAt} /> · at {formatResetTime(resetAt)}</>
+          )
+        ) : windowType === 'weekly' ? (
+          <>resets {formatResetDay(resetAt)}</>
         ) : (
-          <>resets <CountdownTimer targetUnix={resetAt} /></>
+          <>resets <CountdownTimer targetUnix={resetAt} /> · at {formatResetTime(resetAt)}</>
         )}
       </p>
     </div>

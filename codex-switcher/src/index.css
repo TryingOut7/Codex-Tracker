@@ -5,24 +5,24 @@
 @layer base {
   /* ── Obsidian Terminal: always-dark color system ────────────────────────── */
   :root {
-    --background:         222 28% 5%;      /* #080c14 deep navy-black        */
-    --foreground:         214 22% 88%;     /* #d4dbe8 cool off-white         */
-    --card:               220 24% 8%;      /* #0e1320 slightly elevated      */
-    --card-foreground:    214 22% 88%;
-    --popover:            220 24% 8%;
-    --popover-foreground: 214 22% 88%;
+    --background:         222 28% 9%;      /* lifted from near-black         */
+    --foreground:         214 22% 92%;     /* brighter off-white             */
+    --card:               220 24% 13%;     /* noticeably elevated            */
+    --card-foreground:    214 22% 92%;
+    --popover:            220 24% 13%;
+    --popover-foreground: 214 22% 92%;
     --primary:            217 91% 60%;     /* #3b82f6 electric blue          */
-    --primary-foreground: 222 28% 5%;
-    --secondary:          220 20% 13%;     /* #181e2b muted surface          */
-    --secondary-foreground: 214 16% 60%;
-    --muted:              220 20% 12%;
-    --muted-foreground:   215 14% 44%;     /* #616e87 subdued text           */
-    --accent:             220 20% 14%;
-    --accent-foreground:  214 22% 88%;
+    --primary-foreground: 222 28% 9%;
+    --secondary:          220 20% 18%;     /* muted surface                  */
+    --secondary-foreground: 214 16% 68%;
+    --muted:              220 20% 17%;
+    --muted-foreground:   215 14% 58%;     /* more readable subdued text     */
+    --accent:             220 20% 20%;
+    --accent-foreground:  214 22% 92%;
     --destructive:        0 72% 51%;       /* #e03131 alert red              */
     --destructive-foreground: 0 0% 98%;
-    --border:             220 20% 13%;     /* #181e2b subtle divider         */
-    --input:              220 20% 11%;
+    --border:             220 20% 20%;     /* visible dividers               */
+    --input:              220 20% 16%;
     --ring:               217 91% 60%;
     --radius:             0.3rem;          /* sharp corners = technical feel  */
 
@@ -35,24 +35,24 @@
 
   /* Keep .dark identical so system dark-mode toggle does nothing unexpected */
   .dark {
-    --background:         222 28% 5%;
-    --foreground:         214 22% 88%;
-    --card:               220 24% 8%;
-    --card-foreground:    214 22% 88%;
-    --popover:            220 24% 8%;
-    --popover-foreground: 214 22% 88%;
+    --background:         222 28% 9%;
+    --foreground:         214 22% 92%;
+    --card:               220 24% 13%;
+    --card-foreground:    214 22% 92%;
+    --popover:            220 24% 13%;
+    --popover-foreground: 214 22% 92%;
     --primary:            217 91% 60%;
-    --primary-foreground: 222 28% 5%;
-    --secondary:          220 20% 13%;
-    --secondary-foreground: 214 16% 60%;
-    --muted:              220 20% 12%;
-    --muted-foreground:   215 14% 44%;
-    --accent:             220 20% 14%;
-    --accent-foreground:  214 22% 88%;
+    --primary-foreground: 222 28% 9%;
+    --secondary:          220 20% 18%;
+    --secondary-foreground: 214 16% 68%;
+    --muted:              220 20% 17%;
+    --muted-foreground:   215 14% 58%;
+    --accent:             220 20% 20%;
+    --accent-foreground:  214 22% 92%;
     --destructive:        0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border:             220 20% 13%;
-    --input:              220 20% 11%;
+    --border:             220 20% 20%;
+    --input:              220 20% 16%;
     --ring:               217 91% 60%;
   }
 }
@@ -90,7 +90,7 @@
     /* subtle dot-grid texture */
     background-image: radial-gradient(
       circle,
-      rgba(59, 130, 246, 0.04) 1px,
+      rgba(59, 130, 246, 0.07) 1px,
       transparent 1px
     );
     background-size: 22px 22px;

@@ -30,3 +30,17 @@ export function formatCountdown(targetUnix: number): string {
   if (minutes >= 1) return `${minutes}m ${seconds}s`;
   return `${seconds}s`;
 }
+
+export function formatResetTime(targetUnix: number): string {
+  return new Date(targetUnix * 1000).toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+export function formatResetDay(targetUnix: number): string {
+  const d = new Date(targetUnix * 1000);
+  const day = d.toLocaleDateString([], { weekday: 'short' });
+  const time = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  return `${day} ${time}`;
+}
