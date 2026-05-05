@@ -100,6 +100,7 @@ export function Dashboard() {
             )}
             onClick={refreshAll}
             disabled={isRefreshing || accounts.length === 0}
+            aria-label="Refresh all accounts"
             title="Refresh all accounts"
           >
             <RefreshCw className={cn('size-3', isRefreshing && 'animate-spin')} />

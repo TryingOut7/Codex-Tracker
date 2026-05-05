@@ -84,7 +84,7 @@ function AccountCardBase({
   return (
     <div
       className={cn(
-        'relative rounded-md border bg-card overflow-hidden transition-shadow',
+        'relative rounded-md border bg-card transition-shadow',
         'border-l-[3px]',
         accentClass(snap, expired),
         expired ? 'border-red-500/30' : 'border-border',
@@ -151,12 +151,14 @@ function AccountCardBase({
                 className="absolute right-0 z-10 mt-1 w-36 rounded-md border border-border bg-popover p-1 text-xs shadow-xl"
               >
                 <button
+                  role="menuitem"
                   className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-foreground/80 hover:bg-accent hover:text-foreground transition-colors"
                   onClick={() => { setMenuOpen(false); setRenaming(true); }}
                 >
                   <Pencil className="size-3" /> Rename
                 </button>
                 <button
+                  role="menuitem"
                   className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-foreground/80 hover:bg-accent hover:text-foreground transition-colors"
                   onClick={() => { setMenuOpen(false); handleRefresh(); }}
                 >
@@ -164,6 +166,7 @@ function AccountCardBase({
                 </button>
                 <div className="my-1 border-t border-border" />
                 <button
+                  role="menuitem"
                   className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-red-500 hover:bg-red-500/10 transition-colors"
                   onClick={() => { setMenuOpen(false); handleDelete(); }}
                 >
