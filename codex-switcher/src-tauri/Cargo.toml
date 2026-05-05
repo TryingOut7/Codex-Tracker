@@ -1,0 +1,53 @@
+[package]
+name = "codex-switcher"
+version = "1.0.0"
+edition = "2021"
+rust-version = "1.82"
+license = "MIT"
+description = "Track Codex usage across multiple ChatGPT accounts"
+publish = false
+
+[lib]
+name = "codex_switcher_lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "codex-switcher"
+path = "src/main.rs"
+
+[dependencies]
+# `devtools`: enables `WebviewWindow::open_devtools` in release builds (debug
+# builds get it automatically). Required for the tray "Web Inspector" item.
+tauri = { version = "2", features = ["tray-icon", "image-png", "devtools"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-shell = "2"
+
+# Disable defaults to drop the `any`/`json` backends; we only use sqlite.
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "tls-rustls", "sqlite", "chrono", "migrate", "macros"] }
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+tokio = { version = "1", features = ["full"] }
+
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+
+codex-oauth = "=0.1.0"
+
+keyring = { version = "3", features = ["apple-native"] }
+zeroize = { version = "1", features = ["derive"] }
+
+base64 = "0.22"
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+anyhow = "1"
+thiserror = "2"
+
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dev-dependencies]
+tempfile = "3"

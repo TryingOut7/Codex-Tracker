@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ── Obsidian Terminal: always-dark color system ────────────────────────── */
+  :root {
+    --background:         222 28% 5%;      /* #080c14 deep navy-black        */
+    --foreground:         214 22% 88%;     /* #d4dbe8 cool off-white         */
+    --card:               220 24% 8%;      /* #0e1320 slightly elevated      */
+    --card-foreground:    214 22% 88%;
+    --popover:            220 24% 8%;
+    --popover-foreground: 214 22% 88%;
+    --primary:            217 91% 60%;     /* #3b82f6 electric blue          */
+    --primary-foreground: 222 28% 5%;
+    --secondary:          220 20% 13%;     /* #181e2b muted surface          */
+    --secondary-foreground: 214 16% 60%;
+    --muted:              220 20% 12%;
+    --muted-foreground:   215 14% 44%;     /* #616e87 subdued text           */
+    --accent:             220 20% 14%;
+    --accent-foreground:  214 22% 88%;
+    --destructive:        0 72% 51%;       /* #e03131 alert red              */
+    --destructive-foreground: 0 0% 98%;
+    --border:             220 20% 13%;     /* #181e2b subtle divider         */
+    --input:              220 20% 11%;
+    --ring:               217 91% 60%;
+    --radius:             0.3rem;          /* sharp corners = technical feel  */
+
+    /* semantic data colors */
+    --clr-good:    142 71% 45%;   /* emerald  */
+    --clr-warn:    38  92% 50%;   /* amber    */
+    --clr-bad:     0   72% 51%;   /* red      */
+    --clr-blue:    217 91% 60%;   /* electric */
+  }
+
+  /* Keep .dark identical so system dark-mode toggle does nothing unexpected */
+  .dark {
+    --background:         222 28% 5%;
+    --foreground:         214 22% 88%;
+    --card:               220 24% 8%;
+    --card-foreground:    214 22% 88%;
+    --popover:            220 24% 8%;
+    --popover-foreground: 214 22% 88%;
+    --primary:            217 91% 60%;
+    --primary-foreground: 222 28% 5%;
+    --secondary:          220 20% 13%;
+    --secondary-foreground: 214 16% 60%;
+    --muted:              220 20% 12%;
+    --muted-foreground:   215 14% 44%;
+    --accent:             220 20% 14%;
+    --accent-foreground:  214 22% 88%;
+    --destructive:        0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border:             220 20% 13%;
+    --input:              220 20% 11%;
+    --ring:               217 91% 60%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: hidden;
+    /* subtle dot-grid texture */
+    background-image: radial-gradient(
+      circle,
+      rgba(59, 130, 246, 0.04) 1px,
+      transparent 1px
+    );
+    background-size: 22px 22px;
+  }
+
+  html, body, #root { height: 100%; }
+
+  /* Monospace class for all data/numbers */
+  .mono {
+    font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, Monaco,
+                 'Cascadia Mono', 'Segoe UI Mono', 'Courier New', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Draggable title-bar regions */
+  [data-tauri-drag-region] {
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+    -webkit-user-drag: none;
+  }
+  [data-tauri-drag-region] button,
+  [data-tauri-drag-region] input,
+  [data-tauri-drag-region] a {
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  /* Usage-severity accent borders */
+  .accent-good  { border-left-color: hsl(var(--clr-good)); }
+  .accent-warn  { border-left-color: hsl(var(--clr-warn)); }
+  .accent-bad   { border-left-color: hsl(var(--clr-bad)); }
+  .accent-muted { border-left-color: hsl(var(--border)); }
+
+  /* Glowing box-shadow for the best-account banner */
+  .glow-emerald {
+    box-shadow:
+      0 0 0 1px hsl(142 71% 45% / 0.30),
+      0 0 24px hsl(142 71% 45% / 0.12),
+      0 0 48px hsl(142 71% 45% / 0.06);
+  }
+
+  .glow-blue {
+    box-shadow:
+      0 0 0 1px hsl(217 91% 60% / 0.30),
+      0 0 16px hsl(217 91% 60% / 0.10);
+  }
+
+  /* Segment gauge utility — used inside UsageBar */
+  .gauge-track {
+    display: flex;
+    gap: 2px;
+    height: 6px;
+  }
+  .gauge-segment {
+    flex: 1;
+    border-radius: 1px;
+    transition: background-color 0.4s ease;
+  }
+}
+
+/* ── Custom scrollbar ───────────────────────────────────────────────────── */
+::-webkit-scrollbar            { width: 4px; height: 4px; }
+::-webkit-scrollbar-track      { background: transparent; }
+::-webkit-scrollbar-thumb      { background: hsl(220 20% 20%); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(220 20% 28%); }

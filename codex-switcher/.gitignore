@@ -1,0 +1,15 @@
+node_modules
+dist
+.DS_Store
+*.log
+.vite
+*.tsbuildinfo
+vite.config.d.ts
+vite.config.js
+
+# Rust
+src-tauri/target
+src-tauri/Cargo.lock
+
+# Tauri
+src-tauri/gen

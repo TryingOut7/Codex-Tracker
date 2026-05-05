@@ -1,0 +1,58 @@
+[graph]
+all-features = false
+# This app ships only to macOS; restricting the dependency graph to Darwin
+# triples avoids false positives from Linux-only Tauri deps (gtk-rs, glib-sys,
+# webkit2gtk, etc.) that are never linked on the macOS build.
+targets = [
+    { triple = "aarch64-apple-darwin" },
+    { triple = "x86_64-apple-darwin" },
+]
+
+[advisories]
+db-path = "$CARGO_HOME/advisory-db"
+db-urls = ["https://github.com/rustsec/advisory-db"]
+yanked = "warn"
+ignore = [
+    # Triaged: upstream Tauri 2.11 / urlpattern depends on the `unic-*` crates,
+    # which the open-i18n project archived. There is no safe upgrade until
+    # tauri-utils migrates to `unicode-ident` / `icu_properties`. Tracking:
+    # https://github.com/rustsec/advisory-db/issues/2414
+    "RUSTSEC-2025-0075", # unic-char-range unmaintained
+    "RUSTSEC-2025-0080", # unic-common unmaintained
+    "RUSTSEC-2025-0081", # unic-char-property unmaintained
+    "RUSTSEC-2025-0098", # unic-ucd-version unmaintained
+    "RUSTSEC-2025-0100", # unic-ucd-ident unmaintained
+]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+deny = []
+skip = []
+skip-tree = []
+
+[licenses]
+allow = [
+    "MIT",
+    "MIT-0",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "Unicode-3.0",
+    "MPL-2.0",
+    "CC0-1.0",
+    "BSL-1.0",
+    "0BSD",
+    # webpki-roots ships the Mozilla CA bundle under the Community Data License.
+    "CDLA-Permissive-2.0",
+]
+confidence-threshold = 0.92
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
