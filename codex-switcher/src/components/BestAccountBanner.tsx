@@ -1,7 +1,8 @@
-import { memo, useMemo } from 'react';
-import { Zap } from 'lucide-react';
+import { memo, useCallback, useMemo, useState } from 'react';
+import { Check, Copy, Zap } from 'lucide-react';
 import type { AccountWithUsage } from '../types';
 import { formatResetTime } from '../lib/time';
+import { buildCopyText } from '../lib/clipboard';
 import { CountdownTimer } from './CountdownTimer';
 import { UsageBar } from './UsageBar';
 
@@ -25,6 +26,15 @@ function pickBest(accounts: AccountWithUsage[]): AccountWithUsage | null {
 
 function BestAccountBannerBase({ accounts }: { accounts: AccountWithUsage[] }) {
   const best = useMemo(() => pickBest(accounts), [accounts]);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    if (!best) return;
+    await navigator.clipboard.writeText(buildCopyText(best));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }, [best]);
+
   if (!best || !best.latest_snapshot) return null;
   const snap = best.latest_snapshot;
 
@@ -78,16 +88,24 @@ function BestAccountBannerBase({ accounts }: { accounts: AccountWithUsage[] }) {
         </div>
 
         {/* Account identity */}
-        <div className="mb-4 flex items-baseline gap-3">
+        <div className="mb-4 flex items-center gap-3">
           <h2 className="text-xl font-semibold tracking-tight text-foreground">
             {best.label}
           </h2>
           <span className="text-xs text-muted-foreground">{best.email}</span>
-          <span
-            className="ml-auto rounded border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-400"
-          >
-            {best.plan_type}
-          </span>
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={handleCopy}
+              title="Copy account to clipboard"
+              className="inline-flex items-center gap-1 rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400 transition-colors hover:bg-emerald-500/20"
+            >
+              {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+            <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-400">
+              {best.plan_type}
+            </span>
+          </div>
         </div>
 
         {/* Usage bars */}

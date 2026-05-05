@@ -4,6 +4,7 @@ import type { AccountWithUsage } from '../types';
 import { cn, initials } from '../lib/utils';
 import { lastRefreshedLabel } from '../lib/time';
 import { UsageBar } from './UsageBar';
+import { Sparkline } from './Sparkline';
 
 interface Props {
   account: AccountWithUsage;
@@ -246,6 +247,7 @@ function AccountCardBase({
           <RefreshCw className={cn('size-3', busy && 'animate-spin')} />
           Refresh
         </button>
+        <Sparkline accountId={account.id} />
         <span className="mono text-[10px] text-muted-foreground" aria-live="polite">
           {lastRefreshedLabel(account.last_refreshed_at)}
         </span>

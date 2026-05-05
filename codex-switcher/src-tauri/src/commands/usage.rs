@@ -1,4 +1,27 @@
 use crate::api::{fetch_wham_usage, WhamResponse};
+
+fn pick_best_account(accounts: &[AccountWithUsageDto]) -> Option<&AccountWithUsageDto> {
+    accounts
+        .iter()
+        .filter(|a| {
+            a.account.session_status == "active"
+                && a.latest_snapshot
+                    .as_ref()
+                    .map_or(false, |s| !s.limit_reached)
+        })
+        .min_by(|a, b| {
+            let pa = a
+                .latest_snapshot
+                .as_ref()
+                .map_or(f64::MAX, |s| s.primary_used_pct);
+            let pb = b
+                .latest_snapshot
+                .as_ref()
+                .map_or(f64::MAX, |s| s.primary_used_pct);
+            pa.partial_cmp(&pb).unwrap_or(std::cmp::Ordering::Equal)
+        })
+}
+
 use crate::auth::refresh::ensure_fresh_token;
 use crate::auth::storage::keychain_load;
 use crate::dto::{AccountWithUsageDto, JoinedRow, SettingsDto, UsageSnapshotDto, UsageSnapshotRow};
@@ -187,6 +210,8 @@ pub async fn refresh_usage(
 
     let all = get_accounts_internal(&state.db).await?;
     let _ = app.emit("usage-updated", &all);
+    let best = pick_best_account(&all);
+    crate::tray::update_status(&app, best);
     Ok(snap)
 }
 
@@ -298,6 +323,8 @@ pub async fn refresh_all_usage_internal(
 
     let all = get_accounts_internal(&state.db).await?;
     let _ = app.emit("usage-updated", &all);
+    let best = pick_best_account(&all);
+    crate::tray::update_status(app, best);
 
     if out.is_empty() {
         if let Some(e) = last_recoverable {
