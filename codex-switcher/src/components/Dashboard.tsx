@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, RefreshCw, Settings as SettingsIcon, Terminal } from 'lucide-react';
 import { useAccounts } from '../hooks/useAccounts';
 import { useDraggable } from '../hooks/useDraggable';
+import { useCardSort } from '../hooks/useCardSort';
+import { useNextRefresh } from '../hooks/useNextRefresh';
 import { api } from '../api';
 import { AccountCard } from './AccountCard';
 import { BestAccountBanner } from './BestAccountBanner';
@@ -19,9 +21,13 @@ export function Dashboard() {
     isLoading,
     isRefreshing,
     error,
+    lastRefreshed,
     refreshAll,
     reload,
   } = useAccounts();
+
+  const { sortedAccounts, onDragStart, onDragOver, onDrop, onDragEnd } = useCardSort(accounts);
+  const nextRefreshLabel = useNextRefresh(lastRefreshed, settings?.poll_interval_minutes ?? null);
 
   const [showAdd, setShowAdd] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -66,13 +72,13 @@ export function Dashboard() {
     setReloginFor({ id, label });
   }, []);
 
-  const subtitle = useMemo(
-    () =>
-      `${accounts.length} account${accounts.length === 1 ? '' : 's'}${
-        settings ? ` · poll ${settings.poll_interval_minutes}m` : ''
-      }`,
-    [accounts.length, settings],
-  );
+  const subtitle = useMemo(() => {
+    const base = `${accounts.length} account${accounts.length === 1 ? '' : 's'}`;
+    if (!settings) return base;
+    const poll = `poll ${settings.poll_interval_minutes}m`;
+    const countdown = nextRefreshLabel ? `next ${nextRefreshLabel}` : null;
+    return [base, poll, countdown].filter(Boolean).join(' · ');
+  }, [accounts.length, settings, nextRefreshLabel]);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
@@ -150,16 +156,25 @@ export function Dashboard() {
               <BestAccountBanner accounts={accounts} />
               <SwitchCTA accounts={accounts} />
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                {accounts.map((a) => (
-                  <AccountCard
+                {sortedAccounts.map((a) => (
+                  <div
                     key={a.id}
-                    account={a}
-                    alertThreshold={settings?.alert_threshold ?? 0}
-                    onRefresh={handleRefresh}
-                    onDelete={handleDelete}
-                    onRelogin={handleRelogin}
-                    onRename={handleRename}
-                  />
+                    draggable
+                    onDragStart={(e) => onDragStart(a.id, e)}
+                    onDragOver={(e) => onDragOver(a.id, e)}
+                    onDrop={onDrop}
+                    onDragEnd={onDragEnd}
+                    className="cursor-grab active:cursor-grabbing"
+                  >
+                    <AccountCard
+                      account={a}
+                      alertThreshold={settings?.alert_threshold ?? 0}
+                      onRefresh={handleRefresh}
+                      onDelete={handleDelete}
+                      onRelogin={handleRelogin}
+                      onRename={handleRename}
+                    />
+                  </div>
                 ))}
               </div>
             </main>

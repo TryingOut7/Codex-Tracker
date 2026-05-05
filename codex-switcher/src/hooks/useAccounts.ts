@@ -8,21 +8,19 @@ import type {
   Settings,
 } from '../types';
 
-function fireResetNotifications(resets: AccountWithUsage[]) {
-  if (resets.length === 0) return;
+function notify(title: string, body: string) {
   if (!('Notification' in window)) return;
-  const send = () => {
-    for (const a of resets) {
-      new Notification('Usage reset', {
-        body: `${a.label} (${a.email || a.id}) 5-hour window has reset.`,
-        silent: false,
-      });
-    }
-  };
+  const send = () => new Notification(title, { body, silent: false });
   if (Notification.permission === 'granted') {
     send();
   } else if (Notification.permission !== 'denied') {
     Notification.requestPermission().then((p) => { if (p === 'granted') send(); });
+  }
+}
+
+function fireResetNotifications(resets: AccountWithUsage[]) {
+  for (const a of resets) {
+    notify('Usage reset', `${a.label} (${a.email || a.id}) 5-hour window has reset.`);
   }
 }
 
@@ -32,6 +30,7 @@ export function useAccounts() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastRefreshed, setLastRefreshed] = useState<number | null>(null);
   const prevAccountsRef = useRef<AccountWithUsage[]>([]);
 
   const reload = useCallback(async () => {
@@ -61,16 +60,19 @@ export function useAccounts() {
       fireResetNotifications(detectResets(prevAccountsRef.current, next));
       prevAccountsRef.current = next;
       setAccounts(next);
+      setLastRefreshed(Date.now());
     });
-    const unlistenExpired = listen<AccountExpiredEvent>(
-      'account-expired',
-      (e) =>
-        setAccounts((prev) =>
-          prev.map((a) =>
-            a.id === e.payload.id ? { ...a, session_status: 'expired' } : a,
-          ),
+    const unlistenExpired = listen<AccountExpiredEvent>('account-expired', (e) => {
+      notify(
+        'Session expired',
+        `${e.payload.email || e.payload.id} needs to re-login.`,
+      );
+      setAccounts((prev) =>
+        prev.map((a) =>
+          a.id === e.payload.id ? { ...a, session_status: 'expired' } : a,
         ),
-    );
+      );
+    });
     return () => {
       unlistenUsage.then((f) => f());
       unlistenExpired.then((f) => f());
@@ -94,6 +96,7 @@ export function useAccounts() {
     isLoading,
     isRefreshing,
     error,
+    lastRefreshed,
     refreshAll,
     reload,
     setAccounts,

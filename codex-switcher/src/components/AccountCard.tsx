@@ -44,6 +44,7 @@ function AccountCardBase({
   const [renaming, setRenaming] = useState(false);
   const [draftLabel, setDraftLabel] = useState(account.label);
   const [busy, setBusy] = useState(false);
+  const [cardError, setCardError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const expired = account.session_status === 'expired';
@@ -67,8 +68,14 @@ function AccountCardBase({
 
   const handleRefresh = useCallback(async () => {
     setBusy(true);
-    try { await onRefresh(account.id); }
-    finally { setBusy(false); }
+    setCardError(null);
+    try {
+      await onRefresh(account.id);
+    } catch (e) {
+      setCardError(String(e));
+    } finally {
+      setBusy(false);
+    }
   }, [account.id, onRefresh]);
 
   const handleDelete = useCallback(async () => {
@@ -210,6 +217,22 @@ function AccountCardBase({
             onClick={handleRelogin}
           >
             <LogIn className="size-2.5" /> Re-login
+          </button>
+        </div>
+      )}
+
+      {/* Per-card refresh error */}
+      {cardError && (
+        <div className="mx-4 mb-3 flex items-center justify-between gap-3 rounded border border-amber-500/30 bg-amber-500/8 px-3 py-2">
+          <p className="truncate text-[11px] text-amber-400" title={cardError}>
+            Refresh failed
+          </p>
+          <button
+            className="shrink-0 text-[10px] font-semibold text-amber-400 hover:text-amber-300 transition-colors"
+            onClick={handleRefresh}
+            disabled={busy}
+          >
+            Retry
           </button>
         </div>
       )}
