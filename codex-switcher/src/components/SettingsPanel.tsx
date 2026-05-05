@@ -103,6 +103,42 @@ export function SettingsPanel({
             </div>
           </section>
 
+          {/* Alert threshold */}
+          <section className="space-y-2.5">
+            <div>
+              <h4 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Usage alert threshold
+              </h4>
+              <p className="mt-0.5 text-[10px] text-muted-foreground/60">
+                Show a bell icon when an account's 5-hour usage drops below this percentage. Set to 0 to disable.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min={0}
+                max={99}
+                step={1}
+                disabled={busy}
+                value={settings.alert_threshold}
+                onChange={async (e) => {
+                  const v = Number(e.target.value);
+                  setBusy(true);
+                  try {
+                    await api.updateSettings({ ...settings, alert_threshold: v });
+                    await onChanged();
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+                className="h-1.5 w-full accent-primary disabled:opacity-50"
+              />
+              <span className="mono w-8 shrink-0 text-right text-[11px] font-semibold text-foreground">
+                {settings.alert_threshold === 0 ? 'off' : `${settings.alert_threshold}%`}
+              </span>
+            </div>
+          </section>
+
           {/* Accounts list */}
           <section className="space-y-2.5">
             <h4 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">

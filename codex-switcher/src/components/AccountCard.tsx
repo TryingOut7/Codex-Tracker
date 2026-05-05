@@ -1,13 +1,15 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { MoreVertical, RefreshCw, Trash2, Pencil, LogIn, AlertTriangle } from 'lucide-react';
+import { MoreVertical, RefreshCw, Trash2, Pencil, LogIn, AlertTriangle, Bell } from 'lucide-react';
 import type { AccountWithUsage } from '../types';
 import { cn, initials } from '../lib/utils';
 import { lastRefreshedLabel } from '../lib/time';
+import { getThresholdStatus } from '../lib/threshold';
 import { UsageBar } from './UsageBar';
 import { Sparkline } from './Sparkline';
 
 interface Props {
   account: AccountWithUsage;
+  alertThreshold: number;
   onRefresh: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onRelogin: (id: string, label: string) => Promise<void>;
@@ -32,6 +34,7 @@ function accentClass(snap: AccountWithUsage['latest_snapshot'], expired: boolean
 
 function AccountCardBase({
   account,
+  alertThreshold,
   onRefresh,
   onDelete,
   onRelogin,
@@ -141,6 +144,11 @@ function AccountCardBase({
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
+          {getThresholdStatus(account, alertThreshold) === 'under' && (
+            <span title={`Usage below ${alertThreshold}%`} className="flex items-center gap-0.5 rounded border border-amber-500/40 bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-400">
+              <Bell className="size-2.5" />
+            </span>
+          )}
           <span className={cn('mono rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-widest', planBadgeClass(account.plan_type))}>
             {account.plan_type}
           </span>

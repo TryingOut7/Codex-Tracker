@@ -5,6 +5,7 @@ import { useDraggable } from '../hooks/useDraggable';
 import { api } from '../api';
 import { AccountCard } from './AccountCard';
 import { BestAccountBanner } from './BestAccountBanner';
+import { SwitchCTA } from './SwitchCTA';
 import { EmptyState } from './EmptyState';
 import { AddAccountModal } from './AddAccountModal';
 import { SettingsPanel } from './SettingsPanel';
@@ -147,11 +148,13 @@ export function Dashboard() {
           ) : (
             <main className="space-y-4 pb-6">
               <BestAccountBanner accounts={accounts} />
+              <SwitchCTA accounts={accounts} />
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {accounts.map((a) => (
                   <AccountCard
                     key={a.id}
                     account={a}
+                    alertThreshold={settings?.alert_threshold ?? 0}
                     onRefresh={handleRefresh}
                     onDelete={handleDelete}
                     onRelogin={handleRelogin}

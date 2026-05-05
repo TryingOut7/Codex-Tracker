@@ -35,6 +35,8 @@ export interface AccountWithUsage extends Account {
 export interface Settings {
   poll_interval_minutes: number;
   token_refresh_days: number;
+  /** 0 = disabled; 1-99 = warn when primary_used_pct drops to or below this value */
+  alert_threshold: number;
 }
 
 export type LoginProgressStep = 'browser_opened' | 'callback_received' | 'complete';
