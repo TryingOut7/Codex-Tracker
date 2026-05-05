@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "notes": "Initial release of Codex Switcher — monitor and switch between multiple Codex API accounts from your menu bar.",
+  "pub_date": "2026-05-05T00:00:00Z",
+  "platforms": {
+    "darwin-aarch64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUNWNhcmNnTE1uRlN0SEhYZWdyZHhSdlhwckpOZXN4VlQ1MDNQZnI0T3ZIcTUxQnhTQU5KTXk5U2FDWEliMTE3UmhaNFd6cmhOWWpMdjJZQjFMcXBnRE9mY0UxVTZleFFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc3OTg4MTE4CWZpbGU6Q29kZXggU3dpdGNoZXIuYXBwLnRhci5negpwTDNwZElJTHdkQnduUjlOWlZ3dmlZaGlnUk9rVElNN2F2TURGSjdzNzhvQ0NGQThuU3I1MzBQdHJJNnJ1R3JNTFQ5MU1ZZ2l3VTNaZkRzQ08yNFRDdz09Cg==",
+      "url": "https://github.com/TryingOut7/Codex-Tracker/releases/download/v1.0.0/Codex.Switcher_1.0.0_aarch64.app.tar.gz"
+    }
+  }
+}
