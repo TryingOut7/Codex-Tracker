@@ -12,6 +12,9 @@ pub struct AppState {
     pub account_locks: Mutex<HashMap<String, Arc<Mutex<()>>>>,
     pub shutdown_tx: watch::Sender<bool>,
     pub shutdown_rx: watch::Receiver<bool>,
+    /// Held for the duration of any OAuth login flow. try_lock() fails fast
+    /// if another login is already in progress.
+    pub login_mutex: Mutex<()>,
 }
 
 impl AppState {
@@ -34,6 +37,7 @@ impl AppState {
             account_locks: Mutex::new(HashMap::new()),
             shutdown_tx,
             shutdown_rx,
+            login_mutex: Mutex::new(()),
         }
     }
 

@@ -26,6 +26,8 @@ pub enum AppError {
     Json(String),
     #[error("Port 1455 in use — close Codex CLI first")]
     Port1455InUse,
+    #[error("Login already in progress — check your browser to complete it")]
+    LoginAlreadyInProgress,
 }
 
 impl Serialize for AppError {

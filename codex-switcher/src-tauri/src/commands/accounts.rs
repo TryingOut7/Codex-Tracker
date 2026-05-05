@@ -18,6 +18,11 @@ pub async fn login_account(
 ) -> AppResult<AccountWithUsageDto> {
     let _ = app.emit("login-progress", json!({ "step": "browser_opened" }));
 
+    let _login_guard = state
+        .login_mutex
+        .try_lock()
+        .map_err(|_| AppError::LoginAlreadyInProgress)?;
+
     let result = do_login(&state.http).await?;
 
     let _ = app.emit("login-progress", json!({ "step": "callback_received" }));
