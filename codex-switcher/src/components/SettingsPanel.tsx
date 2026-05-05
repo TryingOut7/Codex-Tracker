@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getVersion } from '@tauri-apps/api/app';
 import { Trash2, X } from 'lucide-react';
 import { api } from '../api';
 import type { AccountWithUsage, Settings } from '../types';
@@ -22,6 +23,11 @@ export function SettingsPanel({
   onChanged,
 }: Props) {
   const [busy, setBusy] = useState(false);
+  const [version, setVersion] = useState<string | null>(null);
+
+  useEffect(() => {
+    getVersion().then(setVersion);
+  }, []);
 
   if (!open || !settings) return null;
 
@@ -147,9 +153,14 @@ export function SettingsPanel({
 
           {/* Debug info */}
           <section className="space-y-2 border-t border-border pt-4">
-            <h4 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Debugging
-            </h4>
+            <div className="flex items-center justify-between">
+              <h4 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Debugging
+              </h4>
+              {version && (
+                <span className="mono text-[10px] text-muted-foreground/50">v{version}</span>
+              )}
+            </div>
             <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
               Open <strong className="text-muted-foreground">Web Inspector</strong> from the menubar tray or press{' '}
               <kbd className="mono rounded border border-border bg-secondary px-1 py-0.5 text-[9px]">⌘⌥I</kbd>.
