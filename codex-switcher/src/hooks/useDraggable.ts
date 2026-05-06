@@ -39,12 +39,16 @@ export function useDraggable<T extends HTMLElement = HTMLElement>() {
     // reaches NSWindow.performWindowDrag.
     event.preventDefault();
 
-    // Fire-and-forget. NSWindow needs the current mouseDown event to
-    // still be in NSApp.currentEvent at IPC dispatch time, so we must
-    // not `await` here.
-    getCurrentWindow()
-      .startDragging()
-      .catch((err) => console.warn('startDragging() failed:', err));
+    // setFocus() ensures the window is frontmost before startDragging().
+    // On macOS, NSWindow.performWindowDrag is a no-op when the window
+    // doesn't have application focus — which happens on first click if the
+    // user launched the app but hasn't interacted with it yet.
+    const win = getCurrentWindow();
+    win.setFocus()
+      .catch(() => { /* ignore */ })
+      .finally(() => {
+        win.startDragging().catch((err) => console.warn('startDragging() failed:', err));
+      });
   }, []);
 
   const onDoubleClick = useCallback((event: MouseEvent) => {

@@ -2,6 +2,11 @@
 
 All notable changes are documented here.
 
+## [1.0.8] - 2026-05-07
+
+### Fixed
+- Window drag now works on first attempt without needing to switch focus away and back first
+
 ## [1.0.7] - 2026-05-07
 
 ### Fixed
