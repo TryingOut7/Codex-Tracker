@@ -2,6 +2,11 @@
 
 All notable changes are documented here.
 
+## [1.0.6] - 2026-05-07
+
+### Fixed
+- "Restart Now" button after an update now correctly relaunches the app (missing `process:allow-relaunch` capability)
+
 ## [1.0.5] - 2026-05-07
 
 ### Fixed
