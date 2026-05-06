@@ -2,15 +2,17 @@
 
 All notable changes are documented here.
 
-## [1.0.3] - 2026-05-06
-
-### Fixed
-- Auto-updater now correctly generates `.app.tar.gz` artifacts so the update mechanism works end-to-end
+## [1.0.4] - 2026-05-06
 
 ### Added
 - Crash reporting via Sentry (captures unhandled JS errors in the UI)
 - First-run welcome screen explaining the app and guiding users to add their first account
 - Support section in Settings with links to report bugs, view the changelog, and read the docs
+
+## [1.0.3] - 2026-05-06
+
+### Fixed
+- Auto-updater now correctly generates `.app.tar.gz` artifacts so the update mechanism works end-to-end
 
 ## [1.0.2] - 2026-05-06
 
