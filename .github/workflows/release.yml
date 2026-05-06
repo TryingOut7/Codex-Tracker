@@ -39,32 +39,84 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build and release (Apple Silicon)
-        uses: tauri-apps/tauri-action@v0
+      - name: Build (Apple Silicon)
+        run: npm run tauri build -- --target aarch64-apple-darwin
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        with:
-          projectPath: codex-switcher
-          tagName: ${{ github.ref_name }}
-          releaseName: Codex Switcher ${{ github.ref_name }}
-          releaseBody: |
-            See RELEASING.md for details.
-          releaseDraft: true
-          prerelease: false
-          args: --target aarch64-apple-darwin
 
-      - name: Build and release (Intel)
-        uses: tauri-apps/tauri-action@v0
+      - name: Build (Intel)
+        run: npm run tauri build -- --target x86_64-apple-darwin
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        with:
-          projectPath: codex-switcher
-          tagName: ${{ github.ref_name }}
-          releaseName: Codex Switcher ${{ github.ref_name }}
-          releaseDraft: true
-          prerelease: false
-          args: --target x86_64-apple-darwin
+
+      - name: Package and publish release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -e
+          VERSION="${TAG#v}"
+
+          AARCH64_DMG="src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/Codex Switcher_${VERSION}_aarch64.dmg"
+          X64_DMG="src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/Codex Switcher_${VERSION}_x64.dmg"
+          AARCH64_APP_GZ="src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Codex Switcher.app.tar.gz"
+          X64_APP_GZ="src-tauri/target/x86_64-apple-darwin/release/bundle/macos/Codex Switcher.app.tar.gz"
+          AARCH64_SIG_FILE="src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Codex Switcher.app.tar.gz.sig"
+          X64_SIG_FILE="src-tauri/target/x86_64-apple-darwin/release/bundle/macos/Codex Switcher.app.tar.gz.sig"
+
+          # Rename with arch suffix for upload
+          cp "$AARCH64_APP_GZ" "Codex.Switcher_${VERSION}_aarch64.app.tar.gz"
+          cp "$X64_APP_GZ" "Codex.Switcher_${VERSION}_x64.app.tar.gz"
+
+          # Read signatures into env vars for python
+          export SIG_AARCH64 SIG_X64 VERSION TAG
+          SIG_AARCH64=$(cat "$AARCH64_SIG_FILE")
+          SIG_X64=$(cat "$X64_SIG_FILE")
+
+          # Generate latest.json
+          python3 -c "
+          import json, os
+          version = os.environ['VERSION']
+          tag = os.environ['TAG']
+          sig_aarch64 = os.environ['SIG_AARCH64']
+          sig_x64 = os.environ['SIG_X64']
+          base = f'https://github.com/TryingOut7/Codex-Tracker/releases/download/{tag}'
+          data = {
+              'version': version,
+              'notes': 'See release notes for details.',
+              'platforms': {
+                  'darwin-aarch64': {
+                      'signature': sig_aarch64,
+                      'url': f'{base}/Codex.Switcher_{version}_aarch64.app.tar.gz'
+                  },
+                  'darwin-x86_64': {
+                      'signature': sig_x64,
+                      'url': f'{base}/Codex.Switcher_{version}_x64.app.tar.gz'
+                  }
+              }
+          }
+          with open('latest.json', 'w') as f:
+              json.dump(data, f, indent=2)
+          print('Generated latest.json')
+          "
+
+          # Create draft release, or upload to existing draft if re-running
+          gh release create "$TAG" \
+            --title "Codex Switcher $TAG" \
+            --notes "See RELEASING.md for details." \
+            --draft \
+            "$AARCH64_DMG" \
+            "$X64_DMG" \
+            "Codex.Switcher_${VERSION}_aarch64.app.tar.gz" \
+            "Codex.Switcher_${VERSION}_x64.app.tar.gz" \
+            latest.json \
+            2>/dev/null || \
+          gh release upload "$TAG" \
+            "$AARCH64_DMG" \
+            "$X64_DMG" \
+            "Codex.Switcher_${VERSION}_aarch64.app.tar.gz" \
+            "Codex.Switcher_${VERSION}_x64.app.tar.gz" \
+            latest.json \
+            --clobber
