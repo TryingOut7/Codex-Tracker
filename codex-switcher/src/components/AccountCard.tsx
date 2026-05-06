@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { MoreVertical, RefreshCw, Trash2, Pencil, LogIn, AlertTriangle, Bell } from 'lucide-react';
+import { MoreVertical, RefreshCw, Trash2, Pencil, LogIn, AlertTriangle, Bell, Clock } from 'lucide-react';
 import type { AccountWithUsage } from '../types';
 import { cn, initials } from '../lib/utils';
 import { lastRefreshedLabel } from '../lib/time';
@@ -49,6 +49,19 @@ function AccountCardBase({
 
   const expired = account.session_status === 'expired';
   const snap = account.latest_snapshot;
+
+  const STALE_MS = 5 * 60 * 1000;
+  const [isStale, setIsStale] = useState(
+    () => account.last_refreshed_at != null && Date.now() - account.last_refreshed_at > STALE_MS,
+  );
+  useEffect(() => {
+    const check = () => {
+      setIsStale(account.last_refreshed_at != null && Date.now() - account.last_refreshed_at > STALE_MS);
+    };
+    check();
+    const id = setInterval(check, 30_000);
+    return () => clearInterval(id);
+  }, [account.last_refreshed_at]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -279,7 +292,10 @@ function AccountCardBase({
           Refresh
         </button>
         <Sparkline accountId={account.id} />
-        <span className="mono text-[10px] text-muted-foreground" aria-live="polite">
+        <span className="flex items-center gap-1 mono text-[10px] text-muted-foreground" aria-live="polite">
+          {isStale && !expired && (
+            <span title="Data may be stale (>5 min old)"><Clock className="size-2.5 text-amber-400" /></span>
+          )}
           {lastRefreshedLabel(account.last_refreshed_at)}
         </span>
       </div>

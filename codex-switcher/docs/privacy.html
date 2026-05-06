@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Codex Switcher</title>
+  <style>
+    :root {
+      --bg: #0d0d0f;
+      --surface: #141417;
+      --border: #242428;
+      --text: #e8e8ea;
+      --muted: #888;
+      --accent: #7c6af7;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f5f5f7;
+        --surface: #fff;
+        --border: #d8d8dc;
+        --text: #1a1a1e;
+        --muted: #666;
+        --accent: #5b4fe0;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .logo-icon {
+      width: 28px; height: 28px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      color: #fff;
+    }
+    .logo-text { font-size: 15px; font-weight: 600; }
+    main { padding: 52px 0 80px; }
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+    .effective { color: var(--muted); font-size: 13px; margin-bottom: 40px; }
+    h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 36px 0 10px;
+      color: var(--accent);
+    }
+    p { margin-bottom: 14px; }
+    ul { margin: 0 0 14px 20px; }
+    li { margin-bottom: 6px; }
+    code {
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 13px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+    }
+    .callout {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin: 24px 0;
+      font-size: 14px;
+    }
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="index.html">
+        <div class="logo-icon">⌥</div>
+        <span class="logo-text">Codex Switcher</span>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <h1>Privacy Policy</h1>
+      <p class="effective">Effective date: May 2025 &nbsp;·&nbsp; Version 1.0</p>
+
+      <div class="callout">
+        <strong>Short version:</strong> Codex Switcher stores your ChatGPT OAuth tokens
+        exclusively in your macOS Keychain. No data ever leaves your device. No analytics,
+        no crash reporting servers, no tracking of any kind.
+      </div>
+
+      <h2>1. What data the app stores</h2>
+      <p>Codex Switcher stores the following data <strong>locally on your Mac only</strong>:</p>
+      <ul>
+        <li><strong>OAuth access tokens</strong> — issued by ChatGPT after you log in. Stored in
+          macOS Keychain under the service name <code>com.motosan.codex-switcher</code>.
+          The frontend UI never sees a raw token.</li>
+        <li><strong>Usage snapshots</strong> — numeric quota figures fetched from
+          <code>chatgpt.com/backend-api/wham/usage</code>. Stored in a SQLite database at
+          <code>~/Library/Application Support/com.motosan.codex-switcher/codex_switcher.db</code>.</li>
+        <li><strong>App preferences</strong> — poll interval, alert thresholds, and account
+          display labels. Stored in the same SQLite database.</li>
+        <li><strong>Log files</strong> — structured diagnostic logs written to
+          <code>~/Library/Logs/com.motosan.codex-switcher/</code>. Logs contain timestamps,
+          error messages, and account identifiers (UUIDs). Logs are rotated daily and kept
+          for 7 days.</li>
+      </ul>
+
+      <h2>2. Data we do NOT collect</h2>
+      <ul>
+        <li>No analytics or usage telemetry</li>
+        <li>No crash reports sent to any server</li>
+        <li>No advertising identifiers</li>
+        <li>No personal information beyond what ChatGPT returns in its API response
+          (account email address, plan type)</li>
+      </ul>
+
+      <h2>3. Network requests</h2>
+      <p>The app makes outbound HTTPS requests only to:</p>
+      <ul>
+        <li><code>chatgpt.com</code> — to fetch usage data for your accounts</li>
+        <li><code>auth.openai.com</code> — during the OAuth login flow (opens in your system browser)</li>
+        <li><code>github.com</code> — to check for app updates (reads a public JSON file from the
+          GitHub Releases page of this repository)</li>
+      </ul>
+      <p>No other domains are contacted. The app's
+        <a href="https://github.com/TryingOut7/Codex-Tracker/blob/main/src-tauri/tauri.conf.json"
+           target="_blank">Content Security Policy</a> enforces this at runtime.</p>
+
+      <h2>4. Token security</h2>
+      <p>OAuth tokens are written to macOS Keychain using the
+        <code>apple-native</code> keyring backend. Keychain items are scoped to
+        <code>com.motosan.codex-switcher</code> and are not accessible to other apps
+        without explicit user approval. Tokens are zeroed in memory before deallocation
+        using the <code>zeroize</code> crate.</p>
+
+      <h2>5. Data deletion</h2>
+      <p>To permanently remove all data:</p>
+      <ul>
+        <li>Delete the app from <code>/Applications</code></li>
+        <li>Remove <code>~/Library/Application Support/com.motosan.codex-switcher/</code></li>
+        <li>Remove <code>~/Library/Logs/com.motosan.codex-switcher/</code></li>
+        <li>Open <strong>Keychain Access</strong>, search for
+          <code>com.motosan.codex-switcher</code>, and delete any entries</li>
+      </ul>
+
+      <h2>6. Children's privacy</h2>
+      <p>This app is not directed at children under 13. We do not knowingly collect
+        any information from children.</p>
+
+      <h2>7. Changes to this policy</h2>
+      <p>If this policy changes materially, we will update the effective date above and
+        note the change in the
+        <a href="https://github.com/TryingOut7/Codex-Tracker/blob/main/CHANGELOG.md"
+           target="_blank">CHANGELOG</a>.
+        Continued use of the app after a policy update constitutes acceptance.</p>
+
+      <h2>8. Contact</h2>
+      <p>Questions or concerns? Open an issue on
+        <a href="https://github.com/TryingOut7/Codex-Tracker/issues" target="_blank">GitHub</a>.</p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>&copy; 2025 motosan &nbsp;·&nbsp;
+        <a href="index.html">Home</a> &nbsp;·&nbsp;
+        <a href="https://github.com/TryingOut7/Codex-Tracker" target="_blank">GitHub</a>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react';
 import { getVersion } from '@tauri-apps/api/app';
+import { check as checkUpdate } from '@tauri-apps/plugin-updater';
+import { relaunch } from '@tauri-apps/plugin-process';
 import { Trash2, X } from 'lucide-react';
 import { api } from '../api';
 import type { AccountWithUsage, Settings } from '../types';
 import { cn } from '../lib/utils';
+
+type UpdateStatus =
+  | { kind: 'idle' }
+  | { kind: 'checking' }
+  | { kind: 'up_to_date' }
+  | { kind: 'available'; version: string; downloading: boolean; progress: number }
+  | { kind: 'ready' }
+  | { kind: 'error'; message: string };
 
 interface Props {
   open: boolean;
@@ -24,10 +34,37 @@ export function SettingsPanel({
 }: Props) {
   const [busy, setBusy] = useState(false);
   const [version, setVersion] = useState<string | null>(null);
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({ kind: 'idle' });
 
   useEffect(() => {
     getVersion().then(setVersion);
   }, []);
+
+  const handleCheckUpdate = async () => {
+    setUpdateStatus({ kind: 'checking' });
+    try {
+      const update = await checkUpdate();
+      if (!update?.available) {
+        setUpdateStatus({ kind: 'up_to_date' });
+        return;
+      }
+      setUpdateStatus({ kind: 'available', version: update.version, downloading: false, progress: 0 });
+      setUpdateStatus((s) => s.kind === 'available' ? { ...s, downloading: true } : s);
+      await update.downloadAndInstall((event) => {
+        if (event.event === 'Progress') {
+          const { chunkLength, contentLength } = event.data as {
+            chunkLength: number;
+            contentLength?: number;
+          };
+          const pct = contentLength ? Math.round((chunkLength / contentLength) * 100) : 0;
+          setUpdateStatus((s) => s.kind === 'available' ? { ...s, progress: pct } : s);
+        }
+      });
+      setUpdateStatus({ kind: 'ready' });
+    } catch (e) {
+      setUpdateStatus({ kind: 'error', message: String(e) });
+    }
+  };
 
   if (!open || !settings) return null;
 
@@ -187,16 +224,91 @@ export function SettingsPanel({
             )}
           </section>
 
-          {/* Debug info */}
-          <section className="space-y-2 border-t border-border pt-4">
+          {/* Updates */}
+          <section className="space-y-2.5 border-t border-border pt-4">
             <div className="flex items-center justify-between">
               <h4 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Debugging
+                Updates
               </h4>
               {version && (
                 <span className="mono text-[10px] text-muted-foreground/50">v{version}</span>
               )}
             </div>
+
+            {updateStatus.kind === 'idle' && (
+              <button
+                onClick={handleCheckUpdate}
+                className="inline-flex h-6 items-center gap-1.5 rounded border border-border bg-secondary px-2.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                Check for Updates
+              </button>
+            )}
+
+            {updateStatus.kind === 'checking' && (
+              <p className="text-[10px] text-muted-foreground">Checking for updates…</p>
+            )}
+
+            {updateStatus.kind === 'up_to_date' && (
+              <div className="flex items-center gap-2">
+                <p className="text-[10px] text-emerald-400">You're up to date.</p>
+                <button
+                  onClick={() => setUpdateStatus({ kind: 'idle' })}
+                  className="text-[10px] text-muted-foreground/50 underline hover:text-muted-foreground"
+                >
+                  Check again
+                </button>
+              </div>
+            )}
+
+            {updateStatus.kind === 'available' && (
+              <div className="space-y-1.5">
+                <p className="text-[10px] text-primary">
+                  Update available — v{updateStatus.version}
+                </p>
+                {updateStatus.downloading && (
+                  <div className="h-1 w-full overflow-hidden rounded bg-border">
+                    <div
+                      className="h-full bg-primary transition-all duration-200"
+                      style={{ width: `${updateStatus.progress}%` }}
+                    />
+                  </div>
+                )}
+                <p className="text-[10px] text-muted-foreground/60">
+                  {updateStatus.downloading ? 'Downloading…' : 'Preparing download…'}
+                </p>
+              </div>
+            )}
+
+            {updateStatus.kind === 'ready' && (
+              <div className="space-y-1.5">
+                <p className="text-[10px] text-emerald-400">Update downloaded. Restart to apply.</p>
+                <button
+                  onClick={() => relaunch()}
+                  className="inline-flex h-6 items-center gap-1.5 rounded border border-primary/40 bg-primary/15 px-2.5 text-[10px] font-semibold text-primary transition-colors hover:bg-primary/25"
+                >
+                  Restart Now
+                </button>
+              </div>
+            )}
+
+            {updateStatus.kind === 'error' && (
+              <div className="space-y-1">
+                <p className="text-[10px] text-red-400">Update check failed.</p>
+                <button
+                  onClick={() => setUpdateStatus({ kind: 'idle' })}
+                  className="text-[10px] text-muted-foreground/50 underline hover:text-muted-foreground"
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+          </section>
+
+          {/* Debug info */}
+          <section className="space-y-2 border-t border-border pt-4">
+            <h4 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Debugging
+            </h4>
             <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
               Open <strong className="text-muted-foreground">Web Inspector</strong> from the menubar tray or press{' '}
               <kbd className="mono rounded border border-border bg-secondary px-1 py-0.5 text-[9px]">⌘⌥I</kbd>.

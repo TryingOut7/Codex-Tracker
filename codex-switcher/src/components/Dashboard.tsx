@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, RefreshCw, Settings as SettingsIcon, Terminal } from 'lucide-react';
+import { Plus, RefreshCw, Settings as SettingsIcon, Terminal, HelpCircle } from 'lucide-react';
 import { useAccounts } from '../hooks/useAccounts';
 import { useDraggable } from '../hooks/useDraggable';
 import { useCardSort } from '../hooks/useCardSort';
 import { useNextRefresh } from '../hooks/useNextRefresh';
+import { usePollBackoff } from '../hooks/usePollBackoff';
+import { open as openUrl } from '@tauri-apps/plugin-shell';
 import { api } from '../api';
 import { AccountCard } from './AccountCard';
 import { BestAccountBanner } from './BestAccountBanner';
@@ -28,6 +30,7 @@ export function Dashboard() {
 
   const { sortedAccounts, onDragStart, onDragOver, onDrop, onDragEnd } = useCardSort(accounts);
   const nextRefreshLabel = useNextRefresh(lastRefreshed, settings?.poll_interval_minutes ?? null);
+  const backoffLabel = usePollBackoff();
 
   const [showAdd, setShowAdd] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -115,6 +118,14 @@ export function Dashboard() {
           </button>
           <button
             className="inline-flex size-6 items-center justify-center rounded border border-border bg-secondary text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            onClick={() => openUrl('https://github.com/TryingOut7/Codex-Tracker#readme')}
+            aria-label="Help and documentation"
+            title="Help"
+          >
+            <HelpCircle className="size-3" />
+          </button>
+          <button
+            className="inline-flex size-6 items-center justify-center rounded border border-border bg-secondary text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             onClick={() => setShowSettings(true)}
             aria-label="Open settings"
             title="Settings"
@@ -130,6 +141,13 @@ export function Dashboard() {
           </button>
         </div>
       </header>
+
+      {/* Rate-limit / network backoff banner */}
+      {backoffLabel && (
+        <div className="shrink-0 border-b border-amber-500/20 bg-amber-500/8 px-4 py-1.5 text-[10px] font-medium text-amber-400">
+          {backoffLabel}
+        </div>
+      )}
 
       {/* Scrollable content area */}
       <div className="flex-1 overflow-auto">

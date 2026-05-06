@@ -1,6 +1,6 @@
 [package]
 name = "codex-switcher"
-version = "1.0.4"
+version = "1.0.5"
 edition = "2021"
 rust-version = "1.82"
 license = "MIT"
@@ -44,9 +44,12 @@ anyhow = "1"
 thiserror = "2"
 
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-appender = "0.2"
+dirs-next = "2"
 tauri-plugin-updater = "2.10.1"
 tauri-plugin-process = "2.3.1"
+tauri-plugin-window-state = "2"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }

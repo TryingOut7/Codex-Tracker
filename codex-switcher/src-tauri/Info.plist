@@ -7,5 +7,9 @@
   <true/>
   <key>NSHighResolutionCapable</key>
   <true/>
+  <key>NSHumanReadableCopyright</key>
+  <string>© 2025 motosan</string>
+  <key>CFBundleGetInfoString</key>
+  <string>Codex Switcher 1.0.5, © 2025 motosan</string>
 </dict>
 </plist>

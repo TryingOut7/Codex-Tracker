@@ -59,6 +59,7 @@ pub fn install(app: &AppHandle) -> tauri::Result<()> {
 
     TrayIconBuilder::with_id("main-tray")
         .icon(app.default_window_icon().cloned().unwrap())
+        .icon_as_template(true)
         .menu(&menu)
         .on_menu_event(|app, ev| match ev.id.as_ref() {
             "open" => {

@@ -31,29 +31,41 @@ pub async fn start_poller(
             _ = ticker.tick() => {
                 if backoff_ticks > 0 {
                     backoff_ticks -= 1;
+                    let retry_in_secs = backoff_ticks * interval_minutes * 60;
                     let _ = app.emit("poll-backoff", json!({
                         "ticks_remaining": backoff_ticks,
-                        "reason": "backoff"
+                        "reason": "backoff",
+                        "retry_in_secs": retry_in_secs
                     }));
                     tracing::debug!(remaining_ticks = backoff_ticks, "skip due to backoff");
                     continue;
                 }
 
                 match crate::commands::usage::refresh_all_usage_internal(&app).await {
-                    Ok(_) => {}
+                    Ok(_) => {
+                        let _ = app.emit("poll-backoff", json!({
+                            "ticks_remaining": 0u64,
+                            "reason": "cleared",
+                            "retry_in_secs": 0u64
+                        }));
+                    }
                     Err(crate::error::AppError::RateLimited) => {
                         backoff_ticks = next_backoff(backoff_ticks, 16);
+                        let retry_in_secs = backoff_ticks * interval_minutes * 60;
                         let _ = app.emit("poll-backoff", json!({
                             "ticks_remaining": backoff_ticks,
-                            "reason": "rate_limited"
+                            "reason": "rate_limited",
+                            "retry_in_secs": retry_in_secs
                         }));
                         tracing::warn!(backoff_ticks, "rate-limited; backing off");
                     }
                     Err(crate::error::AppError::Network(e)) => {
                         backoff_ticks = next_backoff(backoff_ticks, 8);
+                        let retry_in_secs = backoff_ticks * interval_minutes * 60;
                         let _ = app.emit("poll-backoff", json!({
                             "ticks_remaining": backoff_ticks,
-                            "reason": "network"
+                            "reason": "network",
+                            "retry_in_secs": retry_in_secs
                         }));
                         tracing::warn!(error = %e, backoff_ticks, "network error; backing off");
                     }

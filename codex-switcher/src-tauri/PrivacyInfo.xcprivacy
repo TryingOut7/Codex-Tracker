@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- This app does not track users across apps or websites. -->
+  <key>NSPrivacyTracking</key>
+  <false/>
+
+  <!-- No tracking domains are contacted. -->
+  <key>NSPrivacyTrackingDomains</key>
+  <array/>
+
+  <!-- No data is collected or sent to the developer. -->
+  <key>NSPrivacyCollectedDataTypes</key>
+  <array/>
+
+  <!-- Required reason APIs used by this app. -->
+  <key>NSPrivacyAccessedAPITypes</key>
+  <array>
+    <!-- Keychain: used to store and retrieve OAuth access tokens. -->
+    <dict>
+      <key>NSPrivacyAccessedAPIType</key>
+      <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+      <key>NSPrivacyAccessedAPITypeReasons</key>
+      <array>
+        <string>CA92.1</string>
+      </array>
+    </dict>
+  </array>
+</dict>
+</plist>

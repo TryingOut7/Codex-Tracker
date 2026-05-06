@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codex Switcher — Track ChatGPT quota across accounts</title>
+  <meta name="description" content="A macOS menubar app that tracks OpenAI Codex (ChatGPT) usage across multiple accounts so you always know which one has quota left." />
+  <style>
+    :root {
+      --bg: #0d0d0f;
+      --surface: #141417;
+      --border: #242428;
+      --text: #e8e8ea;
+      --muted: #888;
+      --accent: #7c6af7;
+      --accent-dim: rgba(124,106,247,0.12);
+      --good: #34c759;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f5f5f7;
+        --surface: #fff;
+        --border: #d8d8dc;
+        --text: #1a1a1e;
+        --muted: #666;
+        --accent: #5b4fe0;
+        --accent-dim: rgba(91,79,224,0.08);
+        --good: #28a745;
+        --warn: #d97706;
+        --bad: #dc3545;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Header ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+    }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .logo-icon {
+      width: 28px; height: 28px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      color: #fff;
+    }
+    .logo-text { font-size: 15px; font-weight: 600; }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .nav-links a { color: var(--muted); }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 80px 0 64px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 100px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+    .hero-badge span { color: var(--accent); font-weight: 600; }
+    .hero h1 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+    .hero p {
+      font-size: 17px;
+      color: var(--muted);
+      max-width: 500px;
+      margin: 0 auto 36px;
+      line-height: 1.6;
+    }
+    .cta-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 8px;
+      padding: 11px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.85; text-decoration: none; }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 22px;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: border-color 0.15s;
+    }
+    .btn-secondary:hover { border-color: var(--accent); text-decoration: none; }
+    .req-note {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── App preview ── */
+    .preview {
+      margin: 0 auto 80px;
+      max-width: 720px;
+      padding: 0 24px;
+    }
+    .preview-window {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.45);
+    }
+    .preview-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-red { background: #ff5f57; }
+    .dot-yellow { background: #febc2e; }
+    .dot-green { background: #28c840; }
+    .titlebar-title {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .preview-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+
+    /* mock best-banner */
+    .mock-banner {
+      border: 1px solid rgba(52,199,89,0.3);
+      background: rgba(52,199,89,0.08);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--good);
+      font-weight: 600;
+    }
+    .mock-banner-dot {
+      width: 6px; height: 6px;
+      background: var(--good);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* mock cards grid */
+    .mock-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .mock-card {
+      border: 1px solid var(--border);
+      border-left: 3px solid;
+      border-radius: 8px;
+      background: var(--bg);
+      padding: 12px;
+    }
+    .mock-card.good { border-left-color: var(--good); }
+    .mock-card.warn { border-left-color: var(--warn); }
+    .mock-card.bad  { border-left-color: var(--bad); }
+    .mock-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .mock-avatar {
+      width: 26px; height: 26px;
+      border-radius: 5px;
+      background: var(--accent-dim);
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: "SF Mono", Menlo, monospace;
+      flex-shrink: 0;
+    }
+    .mock-label { font-size: 12px; font-weight: 600; }
+    .mock-email { font-size: 10px; color: var(--muted); }
+    .mock-plan {
+      margin-left: auto;
+      font-size: 9px;
+      font-weight: 700;
+      border-radius: 4px;
+      padding: 2px 6px;
+      border: 1px solid;
+      font-family: "SF Mono", Menlo, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .plan-pro { border-color: rgba(167,139,250,0.5); background: rgba(167,139,250,0.12); color: #a78bfa; }
+    .plan-plus { border-color: rgba(124,106,247,0.5); background: rgba(124,106,247,0.12); color: var(--accent); }
+    .mock-bar-label {
+      font-size: 9px;
+      color: var(--muted);
+      font-family: "SF Mono", Menlo, monospace;
+      margin-bottom: 3px;
+    }
+    .mock-bar-track {
+      height: 5px;
+      border-radius: 3px;
+      background: var(--border);
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .mock-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
+    .fill-good { background: var(--good); width: 22%; }
+    .fill-warn { background: var(--warn); width: 61%; }
+    .fill-bad  { background: var(--bad);  width: 88%; }
+    .fill-good2 { background: var(--good); width: 15%; }
+    .fill-warn2 { background: var(--warn); width: 44%; }
+    .fill-bad2  { background: var(--bad);  width: 72%; }
+
+    /* ── Features ── */
+    .features { padding: 0 0 80px; }
+    .section-label {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+    .section-title {
+      text-align: center;
+      font-size: clamp(22px, 3vw, 32px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 48px;
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .feature-card {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .feature-icon {
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+    .feature-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .feature-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── Security callout ── */
+    .security-strip {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      padding: 18px 24px;
+      margin-bottom: 80px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .security-strip-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+    .security-strip-body h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .security-strip-body p { font-size: 13px; color: var(--muted); }
+
+    /* ── Install steps ── */
+    .install { padding: 0 0 80px; }
+    .steps { display: flex; flex-direction: column; gap: 16px; margin-top: 32px; }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      border: 1px solid rgba(124,106,247,0.3);
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-body { flex: 1; }
+    .step-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .step-desc { font-size: 13px; color: var(--muted); }
+    code {
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .mock-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="wrap">
+      <nav class="nav">
+        <a class="logo" href="#">
+          <div class="logo-icon">⌥</div>
+          <span class="logo-text">Codex Switcher</span>
+        </a>
+        <div class="nav-links">
+          <a href="https://github.com/TryingOut7/Codex-Tracker" target="_blank">GitHub</a>
+          <a href="https://github.com/TryingOut7/Codex-Tracker/releases/latest" target="_blank">Releases</a>
+          <a href="privacy.html">Privacy</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-badge">
+        <span>Free</span> &amp; open source &nbsp;·&nbsp; macOS 13+
+      </div>
+      <h1>Stop losing Codex quota<br>to the <em>wrong account</em></h1>
+      <p>A menubar app that shows live ChatGPT usage across all your accounts so you always pick the one with headroom.</p>
+      <div class="cta-group">
+        <a class="btn-primary" href="https://github.com/TryingOut7/Codex-Tracker/releases/latest" target="_blank">
+          ↓ Download for Mac
+        </a>
+        <a class="btn-secondary" href="https://github.com/TryingOut7/Codex-Tracker" target="_blank">
+          View source
+        </a>
+      </div>
+      <p class="req-note">Requires macOS 13 Ventura or later &nbsp;·&nbsp; Apple Silicon &amp; Intel</p>
+    </div>
+  </section>
+
+  <!-- App preview -->
+  <div class="preview">
+    <div class="preview-window">
+      <div class="preview-titlebar">
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+        <div class="titlebar-title">Codex Switcher &nbsp;·&nbsp; 3 accounts &nbsp;·&nbsp; poll 15m</div>
+      </div>
+      <div class="preview-body">
+        <div class="mock-banner">
+          <div class="mock-banner-dot"></div>
+          Best right now: work@acme.io — 78% 5-hr remaining
+        </div>
+        <div class="mock-grid">
+          <div class="mock-card good">
+            <div class="mock-card-header">
+              <div class="mock-avatar">WA</div>
+              <div>
+                <div class="mock-label">Work</div>
+                <div class="mock-email">work@acme.io</div>
+              </div>
+              <div class="mock-plan plan-pro">Pro</div>
+            </div>
+            <div class="mock-bar-label">5-hr window</div>
+            <div class="mock-bar-track"><div class="mock-bar-fill fill-good"></div></div>
+            <div class="mock-bar-label">Weekly window</div>
+            <div class="mock-bar-track"><div class="mock-bar-fill fill-good2"></div></div>
+          </div>
+          <div class="mock-card warn">
+            <div class="mock-card-header">
+              <div class="mock-avatar">PL</div>
+              <div>
+                <div class="mock-label">Personal</div>
+                <div class="mock-email">me@gmail.com</div>
+              </div>
+              <div class="mock-plan plan-plus">Plus</div>
+            </div>
+            <div class="mock-bar-label">5-hr window</div>
+            <div class="mock-bar-track"><div class="mock-bar-fill fill-warn"></div></div>
+            <div class="mock-bar-label">Weekly window</div>
+            <div class="mock-bar-track"><div class="mock-bar-fill fill-warn2"></div></div>
+          </div>
+          <div class="mock-card bad">
+            <div class="mock-card-header">
+              <div class="mock-avatar">SD</div>
+              <div>
+                <div class="mock-label">Side project</div>
+                <div class="mock-email">side@dev.io</div>
+              </div>
+              <div class="mock-plan plan-plus">Plus</div>
+            </div>
+            <div class="mock-bar-label">5-hr window</div>
+            <div class="mock-bar-track"><div class="mock-bar-fill fill-bad"></div></div>
+            <div class="mock-bar-label">Weekly window</div>
+            <div class="mock-bar-track"><div class="mock-bar-fill fill-bad2"></div></div>
+          </div>
+          <div class="mock-card good">
+            <div class="mock-card-header">
+              <div class="mock-avatar">BK</div>
+              <div>
+                <div class="mock-label">Backup</div>
+                <div class="mock-email">bk@icloud.com</div>
+              </div>
+              <div class="mock-plan plan-plus">Plus</div>
+            </div>
+            <div class="mock-bar-label">5-hr window</div>
+            <div class="mock-bar-track"><div class="mock-bar-fill fill-good"></div></div>
+            <div class="mock-bar-label">Weekly window</div>
+            <div class="mock-bar-track"><div class="mock-bar-fill fill-good2"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section class="features">
+    <div class="wrap">
+      <p class="section-label">Features</p>
+      <h2 class="section-title">Everything you need, nothing you don't</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <div class="feature-title">Live quota bars</div>
+          <div class="feature-desc">5-hour and weekly usage bars update after every background poll. Color-coded green → amber → red so you can see saturation at a glance.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🏆</div>
+          <div class="feature-title">"Best right now" banner</div>
+          <div class="feature-desc">Instantly surfaces the account with the most 5-hour quota remaining so you can switch without guessing.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔄</div>
+          <div class="feature-title">Background polling</div>
+          <div class="feature-desc">Configurable 5–60 minute interval with exponential backoff on rate limits. Your data stays fresh without hammering the API.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔔</div>
+          <div class="feature-title">Usage threshold alerts</div>
+          <div class="feature-desc">Set a warning threshold (e.g. 20% remaining) and cards below it get a bell badge so you know before you hit the wall.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">↕</div>
+          <div class="feature-title">Drag to reorder</div>
+          <div class="feature-desc">Drag account cards into the order that matches your workflow. Order persists across relaunches.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <div class="feature-title">Keychain storage</div>
+          <div class="feature-desc">OAuth tokens live in macOS Keychain, never in plaintext. Tokens are zeroed in memory before deallocation. The UI never sees a raw token.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🕐</div>
+          <div class="feature-title">Stale data indicator</div>
+          <div class="feature-desc">A clock icon appears on cards whose data is more than 5 minutes old, so you always know whether what you're seeing is current.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📦</div>
+          <div class="feature-title">Auto-update</div>
+          <div class="feature-desc">Checks GitHub Releases for new versions and prompts you to update — no manual download required.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security callout -->
+  <div class="wrap">
+    <div class="security-strip">
+      <div class="security-strip-icon">🔐</div>
+      <div class="security-strip-body">
+        <h3>All data stays on your Mac</h3>
+        <p>No analytics, no crash reporting servers, no telemetry of any kind. Usage snapshots are stored in a local SQLite database. OAuth tokens go directly into Keychain. See the full <a href="privacy.html">privacy policy</a>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Install -->
+  <section class="install">
+    <div class="wrap">
+      <p class="section-label">Install</p>
+      <h2 class="section-title">Up and running in 60 seconds</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Download the DMG</div>
+            <div class="step-desc">
+              Go to <a href="https://github.com/TryingOut7/Codex-Tracker/releases/latest" target="_blank">Releases</a> and download
+              <code>Codex.Switcher_*_aarch64.dmg</code> (Apple Silicon) or <code>x86_64.dmg</code> (Intel).
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Open and drag to Applications</div>
+            <div class="step-desc">Open the DMG and drag <strong>Codex Switcher</strong> to <code>/Applications</code>.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Allow on first launch</div>
+            <div class="step-desc">Right-click the app → <strong>Open</strong> to bypass the macOS Gatekeeper prompt (unsigned build).</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Add your accounts</div>
+            <div class="step-desc">Click the menubar icon → <strong>Open Codex Switcher</strong> → <strong>Add</strong>, then complete the OAuth flow in your browser.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <p>&copy; 2025 motosan</p>
+      <p>
+        <a href="privacy.html">Privacy Policy</a> &nbsp;·&nbsp;
+        <a href="https://github.com/TryingOut7/Codex-Tracker" target="_blank">GitHub</a> &nbsp;·&nbsp;
+        <a href="https://github.com/TryingOut7/Codex-Tracker/issues" target="_blank">Issues</a>
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>

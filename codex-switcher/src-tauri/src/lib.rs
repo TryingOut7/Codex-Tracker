@@ -1,4 +1,5 @@
 use tauri::Manager;
+use tracing_subscriber::prelude::*;
 
 pub mod api;
 pub mod auth;
@@ -6,27 +7,65 @@ pub mod commands;
 pub mod db;
 pub mod dto;
 pub mod error;
+pub mod menu;
 pub mod poller;
 pub mod state;
 pub mod tray;
 
 pub use state::AppState;
 
+fn init_logging() -> Option<tracing_appender::non_blocking::WorkerGuard> {
+    // Resolve ~/Library/Logs/<identifier>/ — fall back to stderr-only if it fails.
+    let log_dir = dirs_next::home_dir()
+        .map(|h| h.join("Library/Logs/com.motosan.codex-switcher"))
+        .filter(|p| std::fs::create_dir_all(p).is_ok());
+
+    let env_filter = tracing_subscriber::EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("codex_switcher=info,warn"));
+
+    let stderr_layer = tracing_subscriber::fmt::layer()
+        .with_writer(std::io::stderr)
+        .with_ansi(true);
+
+    match log_dir {
+        Some(dir) => {
+            let appender = tracing_appender::rolling::daily(&dir, "codex-switcher.log");
+            let (non_blocking, guard) = tracing_appender::non_blocking(appender);
+            let file_layer = tracing_subscriber::fmt::layer()
+                .with_writer(non_blocking)
+                .with_ansi(false)
+                .json();
+            tracing_subscriber::registry()
+                .with(env_filter)
+                .with(stderr_layer)
+                .with(file_layer)
+                .init();
+            Some(guard)
+        }
+        None => {
+            tracing_subscriber::registry()
+                .with(env_filter)
+                .with(stderr_layer)
+                .init();
+            None
+        }
+    }
+}
+
+// Kept alive for the process lifetime so the background log-writer thread stays running.
+static _LOG_GUARD: std::sync::OnceLock<Option<tracing_appender::non_blocking::WorkerGuard>> =
+    std::sync::OnceLock::new();
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                tracing_subscriber::EnvFilter::new("codex_switcher=info,warn")
-            }),
-        )
-        .init();
+    _LOG_GUARD.get_or_init(init_logging);
 
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&app_data_dir)?;
@@ -63,6 +102,12 @@ pub fn run() {
             });
 
             tray::install(app.handle())?;
+
+            let app_menu = menu::build(app.handle())?;
+            app.set_menu(app_menu)?;
+            app.on_menu_event(|app, event| {
+                menu::handle_event(app, event.id.as_ref());
+            });
 
             // With LSUIElement=true the app is an Accessory; AppKit will not
             // auto-show or focus the main window. Explicitly show + focus it
