@@ -678,8 +678,11 @@
             <div class="step">
               <div class="step-num">3</div>
               <div class="step-body">
-                <div class="step-title">Allow on first launch</div>
-                <div class="step-desc">Right-click the app → <strong>Open</strong> to bypass the macOS Gatekeeper prompt (unsigned build).</div>
+                <div class="step-title">Clear the Gatekeeper flag</div>
+                <div class="step-desc">
+                  Because the app is unsigned, macOS may say it's "damaged". Run this once in Terminal, then launch normally:<br>
+                  <code style="display:inline-block;margin-top:6px;">xattr -rd com.apple.quarantine "/Applications/Codex Switcher.app"</code>
+                </div>
               </div>
             </div>
             <div class="step">
