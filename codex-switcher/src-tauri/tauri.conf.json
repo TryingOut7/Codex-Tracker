@@ -55,14 +55,7 @@
       "hardenedRuntime": true,
       "providerShortName": null,
       "frameworks": [],
-      "infoPlist": "Info.plist",
-      "dmg": {
-        "background": "icons/dmg-background.png",
-        "windowSize": { "width": 660, "height": 400 },
-        "windowPosition": { "x": 400, "y": 100 },
-        "appPosition": { "x": 180, "y": 190 },
-        "applicationFolderPosition": { "x": 480, "y": 190 }
-      }
+      "infoPlist": "Info.plist"
     }
   }
 }
