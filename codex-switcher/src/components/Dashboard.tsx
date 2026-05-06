@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, RefreshCw, Settings as SettingsIcon, Terminal, HelpCircle } from 'lucide-react';
 import { useAccounts } from '../hooks/useAccounts';
-import { useDraggable } from '../hooks/useDraggable';
 import { useCardSort } from '../hooks/useCardSort';
 import { useNextRefresh } from '../hooks/useNextRefresh';
 import { usePollBackoff } from '../hooks/usePollBackoff';
@@ -17,7 +16,6 @@ import { WelcomeModal, useFirstRun, markWelcomeSeen } from './WelcomeModal';
 import { cn } from '../lib/utils';
 
 export function Dashboard() {
-  const dragRef = useDraggable<HTMLElement>();
   const {
     accounts,
     settings,
@@ -89,7 +87,7 @@ export function Dashboard() {
     <div className="flex h-screen flex-col overflow-hidden bg-background">
       {/* macOS title bar */}
       <header
-        ref={dragRef}
+        data-tauri-drag-region
         className="relative z-20 flex h-11 shrink-0 items-center justify-between gap-3 border-b border-border bg-card/80 pl-[88px] pr-3 backdrop-blur-sm"
       >
         <div className="flex min-w-0 items-center gap-2.5">

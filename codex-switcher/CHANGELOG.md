@@ -2,6 +2,11 @@
 
 All notable changes are documented here.
 
+## [1.0.9] - 2026-05-07
+
+### Fixed
+- Window dragging now uses native `data-tauri-drag-region` instead of async IPC, making it feel identical to a native macOS titlebar
+
 ## [1.0.8] - 2026-05-07
 
 ### Fixed
