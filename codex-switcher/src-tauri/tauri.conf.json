@@ -31,7 +31,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE1MjdCMzgwRENBQTcxRjkKUldUNWNhcmNnTE1uRmRja01HYlFwYTVkV1dYejJta0VnaFRtWElDbm9CcDNDcUJGTVpNWk1ldUcK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRCMDRENjM3ODgwNUUyMTQKUldRVTRnV0lOOVlFU3oxZHZhNW82bm9mMFdTVUY4aHdjV2QzYnl4eE55R2NndW43QjBCVktRUnAK",
       "endpoints": [
         "https://github.com/TryingOut7/Codex-Tracker/releases/latest/download/latest.json"
       ]
