@@ -2,6 +2,11 @@
 
 All notable changes are documented here.
 
+## [1.0.5] - 2026-05-07
+
+### Fixed
+- "Check for Updates" now correctly shows "You're up to date" instead of "Update check failed" when already on the latest version
+
 ## [1.0.4] - 2026-05-06
 
 ### Added

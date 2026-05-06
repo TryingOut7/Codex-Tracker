@@ -63,7 +63,12 @@ export function SettingsPanel({
       });
       setUpdateStatus({ kind: 'ready' });
     } catch (e) {
-      setUpdateStatus({ kind: 'error', message: String(e) });
+      const msg = String(e).toLowerCase();
+      if (msg.includes('up to date') || msg.includes('no update') || msg.includes('current version is up to date')) {
+        setUpdateStatus({ kind: 'up_to_date' });
+      } else {
+        setUpdateStatus({ kind: 'error', message: String(e) });
+      }
     }
   };
 
