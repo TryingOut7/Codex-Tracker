@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { getVersion } from '@tauri-apps/api/app';
 import { check as checkUpdate } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
-import { Trash2, X } from 'lucide-react';
+import { open as openUrl } from '@tauri-apps/plugin-shell';
+import { ExternalLink, Trash2, X } from 'lucide-react';
 import { api } from '../api';
 import type { AccountWithUsage, Settings } from '../types';
 import { cn } from '../lib/utils';
@@ -304,6 +305,27 @@ export function SettingsPanel({
             )}
           </section>
 
+          {/* Support */}
+          <section className="space-y-2 border-t border-border pt-4">
+            <h4 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Support
+            </h4>
+            <div className="space-y-1.5">
+              <SupportLink
+                href="https://github.com/TryingOut7/Codex-Tracker/issues/new"
+                label="Report a bug"
+              />
+              <SupportLink
+                href="https://github.com/TryingOut7/Codex-Tracker/releases"
+                label="View changelog"
+              />
+              <SupportLink
+                href="https://github.com/TryingOut7/Codex-Tracker#readme"
+                label="Documentation"
+              />
+            </div>
+          </section>
+
           {/* Debug info */}
           <section className="space-y-2 border-t border-border pt-4">
             <h4 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -323,5 +345,17 @@ export function SettingsPanel({
         </div>
       </aside>
     </div>
+  );
+}
+
+function SupportLink({ href, label }: { href: string; label: string }) {
+  return (
+    <button
+      onClick={() => openUrl(href)}
+      className="flex items-center gap-1.5 text-[10px] text-muted-foreground/70 transition-colors hover:text-foreground"
+    >
+      <ExternalLink className="size-3 shrink-0" />
+      {label}
+    </button>
   );
 }

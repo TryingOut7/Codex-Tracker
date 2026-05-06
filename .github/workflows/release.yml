@@ -44,12 +44,14 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
 
       - name: Build (Intel)
         run: npm run tauri build -- --target x86_64-apple-darwin
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
 
       - name: Package and publish release
         env:
@@ -75,6 +77,18 @@ jobs:
           SIG_AARCH64=$(cat "$AARCH64_SIG_FILE")
           SIG_X64=$(cat "$X64_SIG_FILE")
 
+          # Extract release notes from CHANGELOG.md
+          export RELEASE_NOTES
+          RELEASE_NOTES=$(python3 -c "
+          import re, os
+          version = os.environ['VERSION']
+          with open('CHANGELOG.md') as f:
+              text = f.read()
+          pattern = rf'## \[{re.escape(version)}\][^\n]*\n(.*?)(?=\n## \[|\Z)'
+          match = re.search(pattern, text, re.DOTALL)
+          print(match.group(1).strip() if match else 'See CHANGELOG.md for details.')
+          ")
+
           # Generate latest.json
           python3 -c "
           import json, os
@@ -82,10 +96,11 @@ jobs:
           tag = os.environ['TAG']
           sig_aarch64 = os.environ['SIG_AARCH64']
           sig_x64 = os.environ['SIG_X64']
+          notes = os.environ['RELEASE_NOTES']
           base = f'https://github.com/TryingOut7/Codex-Tracker/releases/download/{tag}'
           data = {
               'version': version,
-              'notes': 'See release notes for details.',
+              'notes': notes,
               'platforms': {
                   'darwin-aarch64': {
                       'signature': sig_aarch64,
@@ -105,7 +120,7 @@ jobs:
           # Create draft release, or upload to existing draft if re-running
           gh release create "$TAG" \
             --title "Codex Switcher $TAG" \
-            --notes "See RELEASING.md for details." \
+            --notes "$RELEASE_NOTES" \
             --draft \
             "$AARCH64_DMG" \
             "$X64_DMG" \

@@ -13,6 +13,7 @@ import { SwitchCTA } from './SwitchCTA';
 import { EmptyState } from './EmptyState';
 import { AddAccountModal } from './AddAccountModal';
 import { SettingsPanel } from './SettingsPanel';
+import { WelcomeModal, useFirstRun, markWelcomeSeen } from './WelcomeModal';
 import { cn } from '../lib/utils';
 
 export function Dashboard() {
@@ -34,6 +35,7 @@ export function Dashboard() {
 
   const [showAdd, setShowAdd] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(useFirstRun);
   const [reloginFor, setReloginFor] = useState<{
     id: string;
     label: string;
@@ -200,6 +202,14 @@ export function Dashboard() {
         </div>
       </div>
 
+      <WelcomeModal
+        open={showWelcome}
+        onGetStarted={() => {
+          markWelcomeSeen();
+          setShowWelcome(false);
+          setShowAdd(true);
+        }}
+      />
       <AddAccountModal
         open={showAdd}
         onClose={() => setShowAdd(false)}
