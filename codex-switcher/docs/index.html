@@ -391,6 +391,78 @@
       gap: 10px;
     }
 
+    /* ── Install alternatives ── */
+    .install-alt {
+      margin-top: 32px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .install-alt-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .install-tab {
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s;
+    }
+    .install-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .install-pane { display: none; padding: 20px; }
+    .install-pane.active { display: block; }
+    .curl-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .curl-cmd {
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 12px;
+      color: var(--text);
+      word-break: break-all;
+    }
+    .copy-btn {
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      border-radius: 5px;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+    .install-note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+    .arch-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 4px;
+      padding: 2px 7px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      border: 1px solid rgba(124,106,247,0.25);
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
     @media (max-width: 600px) {
       .mock-grid { grid-template-columns: 1fr; }
       .hero h1 { font-size: 28px; }
@@ -424,7 +496,7 @@
       <h1>Stop losing Codex quota<br>to the <em>wrong account</em></h1>
       <p>A menubar app that shows live ChatGPT usage across all your accounts so you always pick the one with headroom.</p>
       <div class="cta-group">
-        <a class="btn-primary" href="https://github.com/TryingOut7/Codex-Tracker/releases/latest" target="_blank">
+        <a class="btn-primary" id="dl-btn" href="https://github.com/TryingOut7/Codex-Tracker/releases/latest" target="_blank">
           ↓ Download for Mac
         </a>
         <a class="btn-secondary" href="https://github.com/TryingOut7/Codex-Tracker" target="_blank">
@@ -577,39 +649,59 @@
     <div class="wrap">
       <p class="section-label">Install</p>
       <h2 class="section-title">Up and running in 60 seconds</h2>
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">1</div>
-          <div class="step-body">
-            <div class="step-title">Download the DMG</div>
-            <div class="step-desc">
-              Go to <a href="https://github.com/TryingOut7/Codex-Tracker/releases/latest" target="_blank">Releases</a> and download
-              <code>Codex.Switcher_*_aarch64.dmg</code> (Apple Silicon) or <code>x86_64.dmg</code> (Intel).
+
+      <div class="install-alt">
+        <div class="install-alt-tabs">
+          <button class="install-tab active" onclick="showTab('dmg', this)">DMG installer</button>
+          <button class="install-tab" onclick="showTab('curl', this)">Terminal one-liner</button>
+        </div>
+
+        <div id="tab-dmg" class="install-pane active">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <div class="step-title">Download the DMG <span id="arch-badge"></span></div>
+                <div class="step-desc" id="dmg-desc">
+                  Go to <a href="https://github.com/TryingOut7/Codex-Tracker/releases/latest" target="_blank">Releases</a> and download
+                  <code>Codex.Switcher_*_aarch64.dmg</code> (Apple Silicon) or <code>Codex.Switcher_*_x64.dmg</code> (Intel).
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <div class="step-title">Open and drag to Applications</div>
+                <div class="step-desc">Open the DMG and drag <strong>Codex Switcher</strong> to <code>/Applications</code>.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <div class="step-title">Allow on first launch</div>
+                <div class="step-desc">Right-click the app → <strong>Open</strong> to bypass the macOS Gatekeeper prompt (unsigned build).</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-body">
+                <div class="step-title">Add your accounts</div>
+                <div class="step-desc">Click the menubar icon → <strong>Open Codex Switcher</strong> → <strong>Add</strong>, then complete the OAuth flow in your browser.</div>
+              </div>
             </div>
           </div>
         </div>
-        <div class="step">
-          <div class="step-num">2</div>
-          <div class="step-body">
-            <div class="step-title">Open and drag to Applications</div>
-            <div class="step-desc">Open the DMG and drag <strong>Codex Switcher</strong> to <code>/Applications</code>.</div>
+
+        <div id="tab-curl" class="install-pane">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:4px;">Paste into Terminal — auto-detects your architecture, downloads the DMG, installs to <code>/Applications</code>, and removes quarantine so it opens first try.</p>
+          <div class="curl-block">
+            <span class="curl-cmd">curl -fsSL https://tryingout7.github.io/Codex-Tracker/install.sh | bash</span>
+            <button class="copy-btn" onclick="copyCurl(this)">Copy</button>
           </div>
-        </div>
-        <div class="step">
-          <div class="step-num">3</div>
-          <div class="step-body">
-            <div class="step-title">Allow on first launch</div>
-            <div class="step-desc">Right-click the app → <strong>Open</strong> to bypass the macOS Gatekeeper prompt (unsigned build).</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">4</div>
-          <div class="step-body">
-            <div class="step-title">Add your accounts</div>
-            <div class="step-desc">Click the menubar icon → <strong>Open Codex Switcher</strong> → <strong>Add</strong>, then complete the OAuth flow in your browser.</div>
-          </div>
+          <p class="install-note">After install: <code>open -a "Codex Switcher"</code></p>
         </div>
       </div>
+
     </div>
   </section>
 
@@ -624,5 +716,57 @@
     </div>
   </footer>
 
+  <script>
+    (function () {
+      function applyArch(isAS) {
+        var suffix = isAS ? 'aarch64' : 'x64';
+        var label  = isAS ? 'Apple Silicon' : 'Intel';
+        var badge  = document.getElementById('arch-badge');
+        var desc   = document.getElementById('dmg-desc');
+        var btn    = document.getElementById('dl-btn');
+
+        if (badge) {
+          badge.className = 'arch-badge';
+          badge.textContent = label + ' detected';
+        }
+        if (desc) {
+          var text = document.createTextNode('Download ');
+          var link = document.createElement('a');
+          link.href = 'https://github.com/TryingOut7/Codex-Tracker/releases/latest';
+          link.target = '_blank';
+          link.textContent = 'Codex.Switcher_*_' + suffix + '.dmg';
+          var tail = document.createTextNode(' for your Mac.');
+          desc.textContent = '';
+          desc.appendChild(text);
+          desc.appendChild(link);
+          desc.appendChild(tail);
+        }
+        if (btn) {
+          btn.textContent = '↓ Download for ' + label;
+        }
+      }
+
+      if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+        navigator.userAgentData.getHighEntropyValues(['architecture'])
+          .then(function (ua) { applyArch(ua.architecture === 'arm'); })
+          .catch(function () {});
+      }
+    })();
+
+    function showTab(name, btn) {
+      document.querySelectorAll('.install-pane').forEach(function (p) { p.classList.remove('active'); });
+      document.querySelectorAll('.install-tab').forEach(function (b) { b.classList.remove('active'); });
+      document.getElementById('tab-' + name).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    function copyCurl(btn) {
+      var cmd = btn.previousElementSibling.textContent;
+      navigator.clipboard.writeText(cmd).then(function () {
+        btn.textContent = 'Copied!';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 1800);
+      });
+    }
+  </script>
 </body>
 </html>
