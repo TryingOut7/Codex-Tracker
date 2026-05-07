@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, RefreshCw, Settings as SettingsIcon, Terminal, HelpCircle } from 'lucide-react';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCardSort } from '../hooks/useCardSort';
+import { useDraggable } from '../hooks/useDraggable';
 import { useNextRefresh } from '../hooks/useNextRefresh';
 import { usePollBackoff } from '../hooks/usePollBackoff';
 import { open as openUrl } from '@tauri-apps/plugin-shell';
@@ -16,6 +17,7 @@ import { WelcomeModal, useFirstRun, markWelcomeSeen } from './WelcomeModal';
 import { cn } from '../lib/utils';
 
 export function Dashboard() {
+  const titleBarRef = useDraggable<HTMLElement>();
   const {
     accounts,
     settings,
@@ -87,7 +89,8 @@ export function Dashboard() {
     <div className="flex h-screen flex-col overflow-hidden bg-background">
       {/* macOS title bar */}
       <header
-        data-tauri-drag-region
+        ref={titleBarRef}
+        data-window-drag-region
         className="relative z-20 flex h-11 shrink-0 items-center justify-between gap-3 border-b border-border bg-card/80 pl-[88px] pr-3 backdrop-blur-sm"
       >
         <div className="flex min-w-0 items-center gap-2.5">

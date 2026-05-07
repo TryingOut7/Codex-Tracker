@@ -106,15 +106,15 @@
   }
 
   /* Draggable title-bar regions */
-  [data-tauri-drag-region] {
+  [data-window-drag-region] {
     user-select: none;
     -webkit-user-select: none;
     cursor: default;
     -webkit-user-drag: none;
   }
-  [data-tauri-drag-region] button,
-  [data-tauri-drag-region] input,
-  [data-tauri-drag-region] a {
+  [data-window-drag-region] button,
+  [data-window-drag-region] input,
+  [data-window-drag-region] a {
     cursor: pointer;
   }
 }
