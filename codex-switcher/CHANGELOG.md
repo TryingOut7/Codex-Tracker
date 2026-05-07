@@ -2,6 +2,11 @@
 
 All notable changes are documented here.
 
+## [1.0.11] - 2026-05-07
+
+### Added
+- DMG now includes `Install.command` — double-click it after dragging the app to Applications to fix the "damaged" Gatekeeper warning
+
 ## [1.0.10] - 2026-05-07
 
 ### Fixed

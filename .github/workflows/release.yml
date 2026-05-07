@@ -61,14 +61,39 @@ jobs:
           set -e
           VERSION="${TAG#v}"
 
-          AARCH64_DMG="src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/Codex Switcher_${VERSION}_aarch64.dmg"
-          X64_DMG="src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/Codex Switcher_${VERSION}_x64.dmg"
+          AARCH64_APP="src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Codex Switcher.app"
+          X64_APP="src-tauri/target/x86_64-apple-darwin/release/bundle/macos/Codex Switcher.app"
           AARCH64_APP_GZ="src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Codex Switcher.app.tar.gz"
           X64_APP_GZ="src-tauri/target/x86_64-apple-darwin/release/bundle/macos/Codex Switcher.app.tar.gz"
           AARCH64_SIG_FILE="src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Codex Switcher.app.tar.gz.sig"
           X64_SIG_FILE="src-tauri/target/x86_64-apple-darwin/release/bundle/macos/Codex Switcher.app.tar.gz.sig"
 
-          # Rename with arch suffix for upload
+          # Build DMGs with Install.command included
+          for ARCH in aarch64 x64; do
+            if [ "$ARCH" = "aarch64" ]; then
+              APP="$AARCH64_APP"
+            else
+              APP="$X64_APP"
+            fi
+
+            STAGING="dmg-staging-${ARCH}"
+            mkdir -p "$STAGING"
+            cp -r "$APP" "$STAGING/"
+            cp src-tauri/install-helper/Install.command "$STAGING/"
+            chmod +x "$STAGING/Install.command"
+            ln -s /Applications "$STAGING/Applications"
+
+            hdiutil create -volname "Codex Switcher" \
+              -srcfolder "$STAGING" \
+              -ov -format UDRW \
+              "tmp-${ARCH}.dmg"
+            hdiutil convert "tmp-${ARCH}.dmg" \
+              -format UDZO \
+              -o "Codex Switcher_${VERSION}_${ARCH}.dmg"
+            rm -rf "$STAGING" "tmp-${ARCH}.dmg"
+          done
+
+          # Rename updater artifacts with arch suffix
           cp "$AARCH64_APP_GZ" "Codex.Switcher_${VERSION}_aarch64.app.tar.gz"
           cp "$X64_APP_GZ" "Codex.Switcher_${VERSION}_x64.app.tar.gz"
 
@@ -116,6 +141,9 @@ jobs:
               json.dump(data, f, indent=2)
           print('Generated latest.json')
           "
+
+          AARCH64_DMG="Codex Switcher_${VERSION}_aarch64.dmg"
+          X64_DMG="Codex Switcher_${VERSION}_x64.dmg"
 
           # Create draft release, or upload to existing draft if re-running
           gh release create "$TAG" \
