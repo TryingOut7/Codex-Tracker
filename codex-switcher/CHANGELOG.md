@@ -2,6 +2,11 @@
 
 All notable changes are documented here.
 
+## [1.0.10] - 2026-05-07
+
+### Fixed
+- Restored reliable title-bar dragging by wiring the title bar to the manual Tauri window drag path and granting the required window permissions
+
 ## [1.0.9] - 2026-05-07
 
 ### Fixed

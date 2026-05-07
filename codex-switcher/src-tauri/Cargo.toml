@@ -1,6 +1,6 @@
 [package]
 name = "codex-switcher"
-version = "1.0.5"
+version = "1.0.10"
 edition = "2021"
 rust-version = "1.82"
 license = "MIT"
